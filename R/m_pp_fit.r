@@ -13,7 +13,7 @@
 #' @param verbose Logical, if \code{TRUE}, model fitting is output
 #' the console.
 #'
-#' @exportMethod diag
+#' @importMethodsFrom Matrix diag
 #' @export
 mark.pp.fit <- function(mesh = NULL, locs=NULL, t.index = NULL, mark = NULL, covariates = NULL, mark.family = "gaussian", verbose = FALSE){
     spde <-inla.spde2.matern(mesh = mesh, alpha = 2)

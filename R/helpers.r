@@ -10,3 +10,11 @@ make.covs <- function(covariates){
     cov.form <- paste(colnames(covariates),collapse = " + ")
     return(list(cov.effects,cov.form))
 }
+
+
+## find which parts of the random field are inside the supplied spatial polygon
+inwin<-function(proj, window){
+    e<-expand.grid(proj$x,proj$y)
+    o<-inside.owin(e[,1],e[,2],window)
+    o<-matrix(o,nrow=length(proj$x))
+    }

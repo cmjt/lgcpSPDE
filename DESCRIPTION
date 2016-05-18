@@ -8,12 +8,12 @@ Author: Charlotte Jones-Todd <cmjt@st-andrews.ac.uk>
 Maintainer: Charlotte Jones-Todd <cmjt@st-andrews.ac.uk>
 Depends:
     R (>= 3.0.0),
-    Rcpp (>= 0.11.5),
-    INLA,
-    Matrix  
+    Rcpp (>= 0.11.5), 
 Imports:
     spatstat,
-    fields
+    fields,
+    INLA,
+    Matrix 
 LinkingTo: Rcpp
 Description: This package provides functions for the simulation and parameter
     estimation of log Gaussian Cox point process models using INLA/SPDE approach.

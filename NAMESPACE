@@ -2,5 +2,7 @@
 
 export(make.mesh)
 export(mark.pp.fit)
+export(plot.fields)
 export(rgeospde)
-exportMethods(diag)
+importFrom(fields,image.plot)
+importMethodsFrom(Matrix,diag)
