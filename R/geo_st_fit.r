@@ -27,7 +27,7 @@ geo.st.fit <- function(mesh = NULL,  locs = NULL, response = NULL, temp = NULL,c
     Ast <- inla.spde.make.A(mesh = mesh, loc = locs ,group = temp, n.group = k)
     # define variables
     Y <- response
-    ### need to generalise this
+    ## covariates
     n.covs <- ncol(covariates)
     for(i in 1:n.covs){
         assign(colnames(covariates)[i],covariates[,i],envir = .GlobalEnv)
