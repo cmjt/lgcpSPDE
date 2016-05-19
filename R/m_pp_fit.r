@@ -15,7 +15,7 @@
 #'
 #' @importMethodsFrom Matrix diag
 #' @export
-mark.pp.fit <- function(mesh = NULL, locs=NULL, t.index = NULL, mark = NULL, covariates = NULL, mark.family = "gaussian", verbose = FALSE){
+mark.pp.fit <- function(mesh = NULL, locs=NULL, t.index = NULL, mark = NULL, covariates = NULL, mark.family = "gaussian", verbose = FALSE, prior.rho = list(theta = list(prior='pccor1', param = c(0, 0.9))),hyper = list(theta=list(prior='normal', param=c(0,10)))){
     spde <-inla.spde2.matern(mesh = mesh, alpha = 2)
     # number of observations
     n <- nrow(locs)
@@ -31,9 +31,11 @@ mark.pp.fit <- function(mesh = NULL, locs=NULL, t.index = NULL, mark = NULL, cov
         ##effect for LGCP used for point pattern
         st.volume <- diag(kronecker(Diagonal(n = k),spde$param.inla$M0))
         expected <- c(st.volume, rep(0, n))
-        field.pp <- inla.spde.make.index('field.pp', n.spde = spde$n.spde, n.group = k)
-        field.mark <- inla.spde.make.index('field.mark', n.spde = spde$n.spde, n.group = k)
-        copy.field <- inla.spde.make.index('copy.field', n.spde = spde$n.spde, n.group = k)
+        field.pp <- inla.spde.make.index('field.pp', n.spde = spde$n.spde, group = temp, n.group = k)
+        field.mark <- inla.spde.make.index('field.mark', n.spde = spde$n.spde, group = temp, n.group = k)
+        copy.field <- inla.spde.make.index('copy.field', n.spde = spde$n.spde, group = temp, n.group = k)
+        # temporal model "ar1"
+        ctr.g <- list(model='ar1',param = prior.rho)
         if(!is.null(covariates)){
             m <- make.covs(covariates)
             cov.effetcs <- m[[1]]
@@ -52,15 +54,13 @@ mark.pp.fit <- function(mesh = NULL, locs=NULL, t.index = NULL, mark = NULL, cov
                                  effects=list(field.pp = field.pp))
                   formula <- y ~ 0 + f(field.pp, model=spde, group = field.pp.group, control.group=ctr.g) +
                       f(field.mark, model=spde, group = field.mark.group , control.group=ctr.g) +
-                      f(copy.field, copy = "field.pp", fixed=FALSE )
+                      f(copy.field, copy = "field.pp", fixed=FALSE, hyper = hyper )
                  }
         stk.mark <- inla.stack(data=list(y=cbind(NA,mark)),
                                A=list(Ast, Ast),
                                effects=list(field.mark = field.mark, copy.field = copy.field))
         ## combine data stacks
         stack <- inla.stack(stk.pp,stk.mark)
-        # temporal model and priors
-        control <- list(model = 'ar1', hyper = prior.rho)
     }else{
         y.pp <- rep(0:1, c( nv, n))
         ## create projection matrix for loacations
@@ -88,7 +88,7 @@ mark.pp.fit <- function(mesh = NULL, locs=NULL, t.index = NULL, mark = NULL, cov
                                  effects=list(field.pp = field.pp))
                   formula <- y ~ 0 + f(field.pp, model=spde) +
                       f(field.mark, model=spde) +
-                      f(copy.field, copy = "field.pp", fixed=FALSE )
+                      f(copy.field, copy = "field.pp", fixed=FALSE, hyper = hyper )
                  }
         stk.mark <- inla.stack(data=list(y=cbind(NA,mark)),
                                A=list(Ast, Ast),
