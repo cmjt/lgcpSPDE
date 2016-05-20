@@ -1,4 +1,4 @@
-#' Function to fit a intercept only spatial geo-statistical ''prediction' model
+#' Function to fit a spatial geo-statistical ''prediction' model
 #'
 #'
 #' @return A \code{inla} result object
