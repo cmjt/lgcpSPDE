@@ -95,7 +95,7 @@ ants.pp.fit <- function(mesh = NULL, locs=NULL, t.index = NULL, marks = NULL, co
             data=inla.stack.data(stack),
             E=inla.stack.data(stack)$e,
             control.predictor=list(A=inla.stack.A(stack)),
-            control.inla=list(strategy='gaussian',diagonal=1000,restart=TRUE,int.strategy = "eb"),
+            control.inla=list(strategy='gaussian',int.strategy = "eb"),
             verbose = verbose)
     
     result
