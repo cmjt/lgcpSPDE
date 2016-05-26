@@ -4,7 +4,7 @@
 #' using INLA coupled with the SPDE approch 
 #'
 #' @return An inla model fit object, 
-#' @param mesh delaunet triangulation of area, an object returned by \link{make.mesh} is suitable.
+#' @param mesh delauney triangulation of area, an object returned by \link{make.mesh} is suitable.
 #' @param locs a matrix of \code{nrow} locations in \code{ncol} dimesions.
 #' @param t.index a vector of length \code{nrow} of time index units refering to each point location
 #' given in \link{locs}.
