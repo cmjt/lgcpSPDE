@@ -3,12 +3,12 @@
 #'
 #' @return A matrix of values each column a set of observations at each time point
 #'
-#' @param n a numeric constant defining the number of time points, by default 1.
 #' @param locs a matrix of locations at which the values are to be simulated
 #' @param mesh a ``mesh'' object i.e. delauney triangulation of the domain, an
 #' object returned by \link{make.mesh}.
 #' @param kappa a numeric constant, parameter of the SPDE model.
 #' @param sigma2 a numeric constant, parameter of the SPDE model, by default this is 1.
+#' @param n a numeric constant defining the number of time points, by default 1.
 #' @param rho the ar1 correlation coefficient for spatio-temporal samples,
 #' by default this is 0.9.
 #' @param seed seed for the simulation, by default this is 1
