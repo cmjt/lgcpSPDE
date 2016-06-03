@@ -11,13 +11,13 @@
 #' @param spatial.polygon if supplied the spatial polygon for the domain is used to construct mesh
 #' @param sphere Logical if TRUE the mesh is constructed on the unit sphere, note this is only possible if coordinates are
 #' longitude and Latitude, by default FALSE
-#' 
+#' @param plot Logical if TRUE the triangulation is plotted
 #' @export
-make.mesh<-function(locs = NULL, mesh.pars = NULL, spatial.polygon = NULL, sphere = FALSE){
+make.mesh<-function(locs = NULL, mesh.pars = NULL, spatial.polygon = NULL, sphere = FALSE, plot = FALSE){
     # getting mesh parameters
     max.edge.min <- mesh.pars["max.edge.min"]
     max.edge.max <- mesh.pars["max.edge.max"]
-    max.edge <- c(max.edge.min,max.edge.max)
+    if(is.na(max.edge.max)){max.edge <- max.edge.min}else{max.edge <- c(max.edge.min,max.edge.max)}
     cutoff <- mesh.pars["cutoff"]
     mesh.pars<-c(max.edge,cutoff)
     if(!sphere){
@@ -41,5 +41,6 @@ make.mesh<-function(locs = NULL, mesh.pars = NULL, spatial.polygon = NULL, spher
             locs <- inla.mesh.map(locs, projection="longlat", inverse=TRUE)
             mesh <- inla.mesh.2d(loc = locs, max.edge = max.edge, cutoff = cutoff)
         }}
+    if(plot) plot.mesh(mesh)
     mesh
 }

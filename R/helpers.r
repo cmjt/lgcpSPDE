@@ -39,6 +39,16 @@ plot.fields <- function(x = NULL, mesh = NULL, n.t = NULL, sd = FALSE){
     }
 }
 
+## plot mesh
+plot.mesh <- function(x){
+    plot(x,main="",asp=1,draw.segment = FALSE)
+    if (!is.null(mesh$segm$bnd)) 
+                lines(x$segm$bnd, x$loc, lwd = 2,col = 1)
+    if (!is.null(mesh$segm$int)) 
+                lines(x$segm$int, x$loc, lwd = 2,col = 1)
+}
+
+
 ## model fit for ant model (will generalise at some point) i.e. spatio temporal with two marks that is, p/a or ant nests, and p/a of pests
 
 ants.pp.fit <- function(mesh = NULL, locs=NULL, t.index = NULL, marks = NULL, covariates = NULL, mark.family = c("binomial","binomial"), verbose = FALSE,
