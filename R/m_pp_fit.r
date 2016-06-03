@@ -97,7 +97,6 @@ mark.pp.fit <- function(mesh = NULL, locs=NULL, t.index = NULL, mark = NULL, cov
         stack <- inla.stack(stk.pp,stk.mark)
         }
     ##call to inla
-    #family <-  dput(c("poisson",mark.family))
     result <- inla(formula, family = c("poisson",mark.family),
             data=inla.stack.data(stack),
             E=inla.stack.data(stack)$e,

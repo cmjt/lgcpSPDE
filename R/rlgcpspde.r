@@ -17,6 +17,7 @@
 #' @param mark.function a function of 2D spatial coordinates which describes the spatial process
 #' specific to the mark, by default this is \code{function(x,y) cos(x) - sin(y)}.
 #' @param seed seed for the simulation, by default this is 1
+#' @importFrom spatstat ripras
 #' @export
 
 rlgcpspde<-function (mesh = NULL, kappa = NULL, sigma2 = 1,n = 1, rho = 0.9, mark = FALSE, beta = NULL, mark.function = function(x,y) cos(x) - sin(y), seed = 1){

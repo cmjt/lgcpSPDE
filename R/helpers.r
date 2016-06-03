@@ -19,33 +19,24 @@ inwin<-function(proj, window){
     o<-matrix(o,nrow=length(proj$x))
 }
 
-##find fields eith spatio temporal or spatial
-find.fields <- function(x = NULL, mesh = NULL, n.t = NULL, sd = FALSE){
+##plots fields eith spatio-temporal or spatial; function that calls a function that calls it!!
+plot.fields <- function(x = NULL, mesh = NULL, n.t = NULL, sd = FALSE){
     proj <- inla.mesh.projector(mesh)
-    spde <-inla.spde2.matern(mesh = mesh, alpha = 2)
     fields <- names(x$summary.random)
     n <- length(fields)
+    par(mfrow=c(3,3))
     if(!is.null(n.t)){
+        rfs <- find.fields(x = x, mesh = mesh, n.t = n.t, sd = sd)
         t <- n.t
-        means <- list()
-        for (i in 1:n){
-            means [[i]] <- lapply(1:t, function(j) { r <- inla.mesh.project(proj, field = x$summary.random[[i]]$mean[1:spde$n.spde + (j-1)*spde$n.spde]); return(r)})
-        }
-        sds <- list()
-        for (i in 1:n){
-            sds [[i]] <- lapply(1:t, function(j) {r <- inla.mesh.project(proj, field = x$summary.random[[i]]$sd[1:spde$n.spde + (j-1)*spde$n.spde]); return(r)})
+        for(i in 1:n){
+            for(j in 1:t){ image.plot(proj$x,proj$y,rfs[[i]][[j]],axes=FALSE,xlab="",ylab="", main = paste(fields[i], "time", j,  sep = " "))}
         }
     }else{
-        means <- list()
-        for (i in 1:n){
-            means[[i]] <- inla.mesh.project(proj,x$summary.random[[i]]$mean)
-            }
-        sds <- list()
-        for (i in 1:n){
-            sds[[i]] <- inla.mesh.project(proj,x$summary.random[[i]]$sd)
-            }
+        rfs <- find.fields(x = x, mesh = mesh, sd = sd)
+        for(i in 1:n){
+            image.plot(proj$x,proj$y,rfs[[i]],axes=FALSE,xlab="",ylab="", main = fields[i])
+        }
     }
-    ifelse(sd,return(sds),return(means))
 }
 
 ## model fit for ant model (will generalise at some point) i.e. spatio temporal with two marks that is, p/a or ant nests, and p/a of pests
@@ -96,6 +87,7 @@ ants.pp.fit <- function(mesh = NULL, locs=NULL, t.index = NULL, marks = NULL, co
             E=inla.stack.data(stack)$e,
             control.predictor=list(A=inla.stack.A(stack)),
             control.inla=list(strategy='gaussian',int.strategy = "eb"),
+            num.threads = 4,
             verbose = verbose)
     
     result
@@ -105,21 +97,18 @@ ants.pp.fit <- function(mesh = NULL, locs=NULL, t.index = NULL, marks = NULL, co
 
 ## function to fit owl marked pp model including snowfall information (that is covariate with misalignment) (need to generalise)
 owls.pp.fit <- function(mesh = NULL, locs.pp=NULL, locs.cov = NULL, covariate = NULL,  mark = NULL,  mark.family = "binomial", covariate.family = "gaussian", verbose = FALSE, hyper = list(theta=list(prior='normal', param=c(0,10)))){
-    locs<-locs.pp
     spde <- inla.spde2.matern(mesh, alpha=2)
     m <- spde$n.spde
-    n <- nrow(locs)
-    #projector matrix for locations of observations
-    Ast <- inla.spde.make.A(mesh=mesh, loc=locs)
+    n <- nrow(locs.pp)
+    #projector matrix for locations of farms
+    Ast <- inla.spde.make.A(mesh=mesh, loc=locs.pp)
     #pp location response
     y <- rep(0:1, c( m, n))
-    #mark
-    mark <- mark
     #effort data for poisson pp
     st.volume <- diag(spde$param.inla$M0)
     expected <- c(st.volume, rep(0, n))
     A.pp<-rBind(Diagonal(n=m,rep(1,m)),Ast)
-    #misalignet covariate data responses
+    #misalignet covariate data responses and prediction locs
     #covariate  projector matrix
     covAst<-inla.spde.make.A(mesh=mesh,loc=locs.cov)
     cov <- covariate
@@ -135,14 +124,15 @@ owls.pp.fit <- function(mesh = NULL, locs.pp=NULL, locs.cov = NULL, covariate = 
     stk.mark <- inla.stack(data=list(y=cbind(NA,NA,mark)),
                   A=list( Ast,Ast,Ast),tag='mark',
                   effects=list(copy.field.pp = 1:m, copy.field.cov = 1:m, mark.field = 1:m))
-    stk<-inla.stack(stk.pp,stk.cov,stk.mark)
+    stack<-inla.stack(stk.pp,stk.cov,stk.mark)
     formula <- y ~ 0  + f(field.pp,model=spde) + f(field.cov,model=spde) +
         f(copy.field.pp,copy="field.pp") +
         f(copy.field.cov,copy = "field.cov",fixed = FALSE, hyper = hyper) + f(mark.field,model = spde)
     #call to inla
     result <- inla(formula, family=c('poisson', covariate.family, mark.family),
-            data=inla.stack.data(stk),
-            control.predictor=list(A=inla.stack.A(stk)),
+            data=inla.stack.data(stack),
+            control.predictor=list(A=inla.stack.A(stack),compute = TRUE),
             verbose = verbose)
+    return(list(result=result, stack=stack))
 }
     
