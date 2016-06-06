@@ -42,42 +42,33 @@ plot.fields <- function(x = NULL, mesh = NULL, n.t = NULL, sd = FALSE){
 ## plot mesh
 plot.mesh <- function(x){
     plot(x,main="",asp=1,draw.segment = FALSE)
-    if (!is.null(mesh$segm$bnd)) 
+    if (!is.null(x$segm$bnd)) 
                 lines(x$segm$bnd, x$loc, lwd = 2,col = 1)
-    if (!is.null(mesh$segm$int)) 
+    if (!is.null(x$segm$int)) 
                 lines(x$segm$int, x$loc, lwd = 2,col = 1)
 }
 
 
 ## model fit for ant model (will generalise at some point) i.e. spatio temporal with two marks that is, p/a or ant nests, and p/a of pests
 
-ants.pp.fit <- function(mesh = NULL, locs=NULL, t.index = NULL, marks = NULL, covariates = NULL, mark.family = c("binomial","binomial"), verbose = FALSE,
-                        prior.rho = list(theta = list(prior='pccor1', param = c(0, 0.9))),hyper = list(theta=list(prior='normal', param=c(0,10)))){
+ants.pp.fit <- function(mesh = NULL, locs=NULL, marks = NULL, covariates = NULL, mark.family = c("binomial","binomial"), verbose = FALSE,hyper = list(theta=list(prior='normal', param=c(0,10)))){
     spde <-inla.spde2.matern(mesh = mesh, alpha = 2)
     # number of observations
     n <- nrow(locs)
     # number of mesh nodes
     nv <- mesh$n
-    temp <- t.index # temporal dimention
-    k <- (mesh.t <- inla.mesh.1d(temp))$n # number of groups
     ## the response for the point pattern locations
-    y.pp <- rep(0:1, c(k * nv, n))
+    y.pp <- rep(0:1, c( nv, n))
     mark.1 <- marks[,1]
     mark.2 <- marks[,2]
     ## create projection matrix for loacations
-    Ast <- inla.spde.make.A(mesh = mesh, loc = locs, group = temp, n.group = k)
+    Ast <- inla.spde.make.A(mesh = mesh, loc = locs)
     ##effect for LGCP used for point pattern
-    st.volume <- diag(kronecker(Diagonal(n = k),spde$param.inla$M0))
+    st.volume <- diag(spde$param.inla$M0)
     expected <- c(st.volume, rep(0, n))
-    field.pp <- inla.spde.make.index('field.pp', n.spde = spde$n.spde, group = temp, n.group = k)
-    field.mark.1 <- inla.spde.make.index('field.mark.1', n.spde = spde$n.spde, group = temp, n.group = k)
-    copy.field.mark.1 <- inla.spde.make.index('copy.field.mark.1', n.spde = spde$n.spde, group = temp, n.group = k)
-    copy.field.1 <- inla.spde.make.index('copy.field.1', n.spde = spde$n.spde, group = temp, n.group = k)
-    copy.field.2 <- inla.spde.make.index('copy.field.2', n.spde = spde$n.spde, group = temp, n.group = k)
-                                        # temporal model "ar1"
-    ctr.g <- list(model='ar1',param = prior.rho)
+    field.pp <- field.mark.1 <-  copy.field.mark.1 <- copy.field.1 <-  copy.field.2 <- 1:nv                            
     stk.pp <- inla.stack(data=list(y=cbind(y.pp,NA,NA), e=expected),
-                         A=list(rBind(Diagonal(n=k*nv), Ast)),
+                         A=list(rBind(Diagonal(n=nv), Ast)),
                          effects=list(field.pp = field.pp))
     stk.mark.1 <- inla.stack(data=list(y=cbind(NA,mark.1,NA)),
                              A=list(Ast, Ast),
@@ -86,16 +77,16 @@ ants.pp.fit <- function(mesh = NULL, locs=NULL, t.index = NULL, marks = NULL, co
                              A=list(Ast, Ast ),
                              effects=list(copy.field.mark.1 = copy.field.mark.1, copy.field.2 = copy.field.2))
     stack <- inla.stack(stk.pp,stk.mark.1, stk.mark.2)
-    formula <- y ~ 0 + f(field.pp, model=spde, group = field.pp.group, control.group=ctr.g) +
-        f(field.mark.1, model=spde, group = field.mark.1.group , control.group=ctr.g) +
-        f(copy.field.1, copy = "field.pp", fixed=FALSE, hyper = hyper ) +
-        f(copy.field.2, copy = "field.pp", fixed=FALSE, hyper = hyper ) +
+    formula <- y ~ 0 + f(field.pp, model=spde) +
+        f(field.mark.1, model=spde) +
+        f(copy.field.1, copy = "field.pp") +
+        f(copy.field.2, copy = "field.pp" ) +
         f(copy.field.mark.1, copy = "field.mark.1", fixed=FALSE, hyper = hyper )
     ##call to inla
     result <- inla(formula, family = c("poisson",mark.family),
             data=inla.stack.data(stack),
             E=inla.stack.data(stack)$e,
-            control.predictor=list(A=inla.stack.A(stack)),
+            control.predictor=list(A=inla.stack.A(stack),compute = TRUE),
             control.inla=list(strategy='gaussian',int.strategy = "eb"),
             num.threads = 4,
             verbose = verbose)
