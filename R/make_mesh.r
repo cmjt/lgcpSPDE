@@ -6,17 +6,30 @@
 #' @param locs a matrix of locations, either this or \code{spatial.polygon} must be supplied.
 #' @param mesh.pars a named vertor of mesh parameters, must contain
 #' \code{cutoff} length at which to cut off triangle edge lengths,
-#' \code{max.edge.min} triangle edge length inside region,
-#' and \code{max.edge.max} triangle edge length inside region.
+#' \code{min} triangle edge length inside region,
+#' and \code{max} triangle edge length inside region.
 #' @param spatial.polygon if supplied the spatial polygon for the domain is used to construct mesh
 #' @param sphere Logical if TRUE the mesh is constructed on the unit sphere, note this is only possible if coordinates are
 #' longitude and Latitude, by default FALSE
 #' @param plot Logical if TRUE the triangulation is plotted
+#' @import INLA
 #' @export
 make.mesh<-function(locs = NULL, mesh.pars = NULL, spatial.polygon = NULL, sphere = FALSE, plot = FALSE){
+    if(is.null(mesh.pars)){
+        if(is.null(spatial.polygon)){
+            w <- ripras(locs)
+            mesh.pars <- c(max = 0.15 ,
+                           min = 0.1,
+                           cutoff = 0.15)
+                }else{
+                    mesh.pars <- c(max = 0.15 ,
+                                   min = 0.1,
+                                   cutoff = 0.15)
+                    }
+        }
     # getting mesh parameters
-    max.edge.min <- mesh.pars["max.edge.min"]
-    max.edge.max <- mesh.pars["max.edge.max"]
+    max.edge.min <- mesh.pars["min"]
+    max.edge.max <- mesh.pars["max"]
     if(is.na(max.edge.max)){max.edge <- max.edge.min}else{max.edge <- c(max.edge.min,max.edge.max)}
     cutoff <- mesh.pars["cutoff"]
     mesh.pars<-c(max.edge,cutoff)

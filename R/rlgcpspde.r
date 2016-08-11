@@ -3,10 +3,12 @@
 #'
 #' @return A named matrix (or a list of matricies if spatio-temporal) of point locations and
 #' (if a marked point pattern is simulated) a mark values
-#'
+#' @param spatial.polygon the spatial polygon for the domain is used to construct the delauney traingulation
 #' @param n a numeric constant defining the number of time points, by default 1.
-#' @param mesh a ``mesh'' object i.e. delauney triangulation of the domain, an
-#' object returned by \link{make.mesh}.
+#' @param mesh.pars a named vertor of mesh parameters, must contain
+#' \code{cutoff} length at which to cut off triangle edge lengths,
+#' \code{min} triangle edge length inside region,
+#' and \code{max} triangle edge length inside region.
 #' @param kappa a numeric constant, parameter of the SPDE model.
 #' @param sigma2 a numeric constant, parameter of the SPDE model, by default this is 1.
 #' @param n a numeric constant defining the number of time points, by default 1.
@@ -17,14 +19,17 @@
 #' @param mark.function a function of 2D spatial coordinates which describes the spatial process
 #' specific to the mark, by default this is \code{function(x,y) cos(x) - sin(y)}.
 #' @param seed seed for the simulation, by default this is 1
-#' @importFrom spatstat ripras
+#' @import spatstat
+#' @import maptools
+#' @import INLA
 #' @export
 
-rlgcpspde<-function (mesh = NULL, kappa = NULL, sigma2 = 1,n = 1, rho = 0.9, mark = FALSE, beta = NULL, mark.function = function(x,y) cos(x) - sin(y), seed = 1){
+rlgcpspde<-function (spatial.polygon = NULL, mesh.pars = NULL, kappa = NULL, sigma2 = 1,n = 1, rho = 0.9, mark = FALSE, beta = NULL, mark.function = function(x,y) cos(x) - sin(y), seed = 1){
+    mesh <- make.mesh(mesh.pars = mesh.pars, spatial.polygon = spatial.polygon)
     locs <- mesh$loc
     sample <- rgeospde(locs = locs, mesh = mesh, kappa = kappa, sigma2 = sigma2, n = n, rho = rho, seed = seed)
     proj<-inla.mesh.projector(mesh = mesh)
-    w <- ripras(locs)
+    w <- as.owin(spatial.polygon)
     y0 <- x0 <- seq(w$xrange[1], w$xrange[2],length=length(proj$x))
     if(mark){
         mark.im <- outer(x0,y0, mark.function)
@@ -54,9 +59,9 @@ rlgcpspde<-function (mesh = NULL, kappa = NULL, sigma2 = 1,n = 1, rho = 0.9, mar
             result <- sapply(1:length(pp), function(i) cbind(x = loc[[i]][,1],y = loc[[i]][,2], mark = mark[[i]]))
             }}else{
                  if(ncol(sample)==1){
-                     logLambda <- matrix(inla.mesh.project(proj, sample),length(proj$x),length(proj$y))
+                     Lambda <- as.im(exp(matrix(inla.mesh.project(proj, sample),length(proj$x),length(proj$y))),W = w)
                      set.seed(seed)
-                     pp <-rpoispp(as.im(exp(logLambda), W = w))[w]
+                     pp <-rpoispp(Lambda)[w]
                      loc <- cbind(pp$x,pp$y)
                      result <- cbind(x = loc[,1],y = loc[,2])
                  }else{
@@ -71,7 +76,7 @@ rlgcpspde<-function (mesh = NULL, kappa = NULL, sigma2 = 1,n = 1, rho = 0.9, mar
                      result <- sapply(1:length(pp), function(i) cbind(x = loc[[i]][,1],y = loc[[i]][,2]))
                  }
             }
-    result
+    return(result)
 }
             
             

@@ -19,35 +19,6 @@ inwin<-function(proj, window){
     o<-matrix(o,nrow=length(proj$x))
 }
 
-##plots fields eith spatio-temporal or spatial; function that calls a function that calls it!!
-plot.fields <- function(x = NULL, mesh = NULL, n.t = NULL, sd = FALSE){
-    proj <- inla.mesh.projector(mesh)
-    fields <- names(x$summary.random)
-    n <- length(fields)
-    par(mfrow=c(3,3))
-    if(!is.null(n.t)){
-        rfs <- find.fields(x = x, mesh = mesh, n.t = n.t, sd = sd)
-        t <- n.t
-        for(i in 1:n){
-            for(j in 1:t){ image.plot(proj$x,proj$y,rfs[[i]][[j]],axes=FALSE,xlab="",ylab="", main = paste(fields[i], "time", j,  sep = " "))}
-        }
-    }else{
-        rfs <- find.fields(x = x, mesh = mesh, sd = sd)
-        for(i in 1:n){
-            image.plot(proj$x,proj$y,rfs[[i]],axes=FALSE,xlab="",ylab="", main = fields[i])
-        }
-    }
-}
-
-## plot mesh
-plot.mesh <- function(x){
-    plot(x,main="",asp=1,draw.segment = FALSE)
-    if (!is.null(x$segm$bnd)) 
-                lines(x$segm$bnd, x$loc, lwd = 2,col = 1)
-    if (!is.null(x$segm$int)) 
-                lines(x$segm$int, x$loc, lwd = 2,col = 1)
-}
-
 
 ## model fit for ant model (will generalise at some point) i.e. spatio temporal with two marks that is, p/a or ant nests, and p/a of pests
 
@@ -136,4 +107,48 @@ owls.pp.fit <- function(mesh = NULL, locs.pp=NULL, locs.cov = NULL, covariate = 
             verbose = verbose)
     return(list(result=result, stack=stack))
 }
+    
+## fit simple pp model
+
+
+pp.fit <- function(mesh = NULL, locs=NULL, verbose = FALSE, covariates = NULL){
+    spde <-inla.spde2.matern(mesh = mesh, alpha = 2)
+    # number of observations
+    n <- nrow(locs)
+    # number of mesh nodes
+    nv <- mesh$n
+    y.pp <- rep(0:1, c( nv, n))
+        ## create projection matrix for loacations
+    Ast <- inla.spde.make.A(mesh = mesh, loc = locs)
+        ##effect for LGCP used for point pattern
+    st.volume <- diag(spde$param.inla$M0)
+    expected <- c(st.volume, rep(0, n))
+                                        #fields
+    field.pp  <-1:nv
+    if(!is.null(covariates)){
+            m <- make.covs(covariates)
+            cov.effetcs <- m[[1]]
+            cov.form <- m[[2]]
+                                        #create data stacks
+            stack <- inla.stack(data=list(y=y.pp, e=expected),
+                                 A=list(rBind(Diagonal(n=nv), Ast),1),
+                                 effects=list(field.pp = field.pp, cov.effets = cov.effects))
+            formula = paste("y", "~  0 + ", cov.form,
+                    " + f(field.pp, model=spde)")
+            }else{
+                 stack <- inla.stack(data=list(y=y.pp, e=expected),
+                                 A=list(rBind(Diagonal(n=nv), Ast),1),
+                                 effects=list(field.pp = field.pp, beta0 = rep(1,nv+n)))
+                  formula <- y ~ 0  + beta0 + f(field.pp, model=spde)
+                 }
+    ##call to inla
+    result <- inla(formula, family = "poisson",
+            data=inla.stack.data(stack),
+            E=inla.stack.data(stack)$e,
+            control.predictor=list(A=inla.stack.A(stack)),
+            control.inla=list(strategy='gaussian',int.strategy = 'eb'),
+            verbose = verbose)
+    result
+}
+                                      
     
