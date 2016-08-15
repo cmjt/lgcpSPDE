@@ -18,13 +18,14 @@ make.mesh<-function(locs = NULL, mesh.pars = NULL, spatial.polygon = NULL, spher
     if(is.null(mesh.pars)){
         if(is.null(spatial.polygon)){
             w <- ripras(locs)
-            mesh.pars <- c(max = 0.15 ,
-                           min = 0.1,
-                           cutoff = 0.15)
+            mesh.pars <- c(max = 0.15*sqrt(area(w)) ,
+                           min = 0.1*sqrt(area(w)),
+                           cutoff = 0.15*sqrt(area(w)))
                 }else{
-                    mesh.pars <- c(max = 0.15 ,
-                                   min = 0.1,
-                                   cutoff = 0.15)
+                    w <- spatial.polygon
+                    mesh.pars <- c(max = 0.15*sqrt(area(w)),
+                                   min = 0.1*sqrt(area(w)),
+                                   cutoff = 0.15*sqrt(area(w)))
                     }
         }
     # getting mesh parameters

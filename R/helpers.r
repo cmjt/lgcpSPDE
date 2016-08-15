@@ -108,47 +108,5 @@ owls.pp.fit <- function(mesh = NULL, locs.pp=NULL, locs.cov = NULL, covariate = 
     return(list(result=result, stack=stack))
 }
     
-## fit simple pp model
-
-
-pp.fit <- function(mesh = NULL, locs=NULL, verbose = FALSE, covariates = NULL){
-    spde <-inla.spde2.matern(mesh = mesh, alpha = 2)
-    # number of observations
-    n <- nrow(locs)
-    # number of mesh nodes
-    nv <- mesh$n
-    y.pp <- rep(0:1, c( nv, n))
-        ## create projection matrix for loacations
-    Ast <- inla.spde.make.A(mesh = mesh, loc = locs)
-        ##effect for LGCP used for point pattern
-    st.volume <- diag(spde$param.inla$M0)
-    expected <- c(st.volume, rep(0, n))
-                                        #fields
-    field.pp  <-1:nv
-    if(!is.null(covariates)){
-            m <- make.covs(covariates)
-            cov.effetcs <- m[[1]]
-            cov.form <- m[[2]]
-                                        #create data stacks
-            stack <- inla.stack(data=list(y=y.pp, e=expected),
-                                 A=list(rBind(Diagonal(n=nv), Ast),1),
-                                 effects=list(field.pp = field.pp, cov.effets = cov.effects))
-            formula = paste("y", "~  0 + ", cov.form,
-                    " + f(field.pp, model=spde)")
-            }else{
-                 stack <- inla.stack(data=list(y=y.pp, e=expected),
-                                 A=list(rBind(Diagonal(n=nv), Ast),1),
-                                 effects=list(field.pp = field.pp, beta0 = rep(1,nv+n)))
-                  formula <- y ~ 0  + beta0 + f(field.pp, model=spde)
-                 }
-    ##call to inla
-    result <- inla(formula, family = "poisson",
-            data=inla.stack.data(stack),
-            E=inla.stack.data(stack)$e,
-            control.predictor=list(A=inla.stack.A(stack)),
-            control.inla=list(strategy='gaussian',int.strategy = 'eb'),
-            verbose = verbose)
-    result
-}
-                                      
+                                       
     
