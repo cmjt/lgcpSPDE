@@ -4,13 +4,13 @@
 #' @return A named matrix (or a list of matricies if spatio-temporal) of point locations and
 #' (if a marked point pattern is simulated) a mark values
 #' @param spatial.polygon the spatial polygon for the domain is used to construct the delauney traingulation
-#' @param n a numeric constant defining the number of time points, by default 1.
 #' @param mesh.pars a named vertor of mesh parameters, must contain
 #' \code{cutoff} length at which to cut off triangle edge lengths,
 #' \code{min} triangle edge length inside region,
 #' and \code{max} triangle edge length inside region.
+#' @param mu numeric, the intercept term to simulate a LGCP, by default is 0.
 #' @param kappa a numeric constant, parameter of the SPDE model.
-#' @param sigma2 a numeric constant, parameter of the SPDE model, by default this is 1.
+#' @param sigma2 a numeric constant, parameter of the SPDE model, by default this is 0.05.
 #' @param n a numeric constant defining the number of time points, by default 1.
 #' @param rho the ar1 correlation coefficient for spatio-temporal samples,
 #' by default this is 0.9.
@@ -19,15 +19,12 @@
 #' @param mark.function a function of 2D spatial coordinates which describes the spatial process
 #' specific to the mark, by default this is \code{function(x,y) cos(x) - sin(y)}.
 #' @param seed seed for the simulation, by default this is 1
-#' @import spatstat
-#' @import maptools
-#' @import INLA
 #' @export
 
-rlgcpspde<-function (spatial.polygon = NULL, mesh.pars = NULL, kappa = NULL, sigma2 = 1,n = 1, rho = 0.9, mark = FALSE, beta = NULL, mark.function = function(x,y) cos(x) - sin(y), seed = 1){
+rlgcpspde<-function (spatial.polygon = NULL, mesh.pars = NULL, mu = 0, kappa = NULL, sigma2 = 0.05 , n = 1, rho = 0.9, mark = FALSE, beta = NULL, mark.function = function(x,y) cos(x) - sin(y), seed = 1){
     mesh <- make.mesh(mesh.pars = mesh.pars, spatial.polygon = spatial.polygon)
     locs <- mesh$loc
-    sample <- rgeospde(locs = locs, mesh = mesh, kappa = kappa, sigma2 = sigma2, n = n, rho = rho, seed = seed)
+    sample <- mu + rgeospde(locs = locs, mesh = mesh, kappa = kappa, sigma2 = sigma2, n = n, rho = rho, seed = seed)
     proj<-inla.mesh.projector(mesh = mesh)
     w <- as.owin(spatial.polygon)
     y0 <- x0 <- seq(w$xrange[1], w$xrange[2],length=length(proj$x))
@@ -78,5 +75,10 @@ rlgcpspde<-function (spatial.polygon = NULL, mesh.pars = NULL, kappa = NULL, sig
             }
     return(result)
 }
+
+
             
             
+
+
+

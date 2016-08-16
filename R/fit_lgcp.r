@@ -16,7 +16,7 @@
 #' @param prior.rho prior for the temporal correlation coefficient, by default a \code{pcprior} is used with \code{param=c(0-0.9)}. 
 #' @param verbose Logical if \code{TRUE} model fit is output to screen.
 
-
+#' @export
 
 
 fit.lgcp <- function(mesh = NULL, mesh.pars = NULL, locs=NULL, temp = NULL, covariates = NULL, prior.rho = list(theta = list(prior='pccor1', param = c(0, 0.9))), verbose = FALSE, control.inla=list(strategy='gaussian',int.strategy = 'eb'),return.attributes = FALSE){

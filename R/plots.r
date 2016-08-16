@@ -9,11 +9,13 @@
 #' @param sd Logical, if \code{FALSE} means of random fields aer returned.
 #' @param plot Logical, if \code{TRUE} the returned matricies (either SD or Mean of
 #' random fields are plotted.
-#' @importFrom spatstat as.owin
+#' @param spatial.polygon Optional, if a spatial polygon of the domain is supplied, only
+#' values of the random field within the domain will be returned
+#' @param ... additional graphical parameters
 #'  @importFrom fields image.plot
 #'
 #' @export
-find.fields <- function(x = NULL, mesh = NULL, n.t = NULL, sd = FALSE, plot = FALSE, spatial.polygon = NULL){
+find.fields <- function(x = NULL, mesh = NULL, n.t = NULL, sd = FALSE, plot = FALSE, spatial.polygon = NULL,...){
     if(is.null(attributes(x)$mesh) & is.null(mesh)){
         stop("no mesh has been supplied")}
     if(!is.null(attributes(x)$mesh)){mesh <- attributes(x)$mesh}else{mesh <- mesh}
@@ -33,7 +35,7 @@ find.fields <- function(x = NULL, mesh = NULL, n.t = NULL, sd = FALSE, plot = FA
             sds [[i]] <- lapply(1:t, function(j) {r <- inla.mesh.project(proj, field = x$summary.random[[i]]$sd[1:spde$n.spde + (j-1)*spde$n.spde]);if(!is.null(spatial.polygon)) r[!inside] <- NA;  return(r)})
         }
         if(!is.null(spatial.polygon)) for(i in 1:n){sds[[i]][!inside] <- NA}
-        if(plot){plot.fields( x = x, mesh = mesh, n.t = n.t, sd = sd, spatial.polygon = spatial.polygon)}
+        if(plot){plot.fields( x = x, mesh = mesh, n.t = n.t, sd = sd, spatial.polygon = spatial.polygon,...)}
     }else{
         means <- list()
         for (i in 1:n){
@@ -45,7 +47,7 @@ find.fields <- function(x = NULL, mesh = NULL, n.t = NULL, sd = FALSE, plot = FA
             sds[[i]] <- inla.mesh.project(proj,x$summary.random[[i]]$sd)
             if(!is.null(spatial.polygon)) sds[[i]][!inside] <- NA; 
             }
-        if(plot){plot.fields( x = x, mesh = mesh, n.t = n.t, sd = sd, spatial.polygon = spatial.polygon)}
+        if(plot){plot.fields( x = x, mesh = mesh, n.t = n.t, sd = sd, spatial.polygon = spatial.polygon,...)}
     }
     ifelse(sd,return(sds),return(means))
 }
