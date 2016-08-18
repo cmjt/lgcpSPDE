@@ -7,7 +7,7 @@
 #' @param mesh.pars a named vertor of mesh parameters, must contain
 #' \code{cutoff} length at which to cut off triangle edge lengths,
 #' \code{min} triangle edge length inside region,
-#' and \code{max} triangle edge length inside region.
+#' and \code{max} triangle edge length outside region.
 #' @param locs a matrix of observation locations, where each row corresponds to the observation. 
 #' @param response a vector of response variable, each corresponds to the spatial locations
 #' in \code{locs}.
@@ -25,8 +25,10 @@ fit.lgcp <- function(mesh = NULL, mesh.pars = NULL, locs=NULL, temp = NULL, cova
         }
     if(is.null(mesh)){
         if(is.null(mesh.pars)){
+            warning("crude mesh constructed, highly recommended user supplies own triangulation")
             mesh <- make.mesh(locs = locs)
         }else{
+            warning("highly recommended user checks triangulation")
             mesh <- make.mesh(loc = locs, mesh.pars = mesh.pars)
         }
     }else{

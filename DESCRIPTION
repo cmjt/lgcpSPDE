@@ -9,7 +9,8 @@ Maintainer: Charlotte Jones-Todd <cmjt@st-andrews.ac.uk>
 Depends:
     R (>= 3.0.0),
     INLA,
-    spatstat
+    spatstat,
+    maptools
 Imports:
     fields,
     Matrix

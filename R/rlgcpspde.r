@@ -29,6 +29,7 @@ rlgcpspde<-function (spatial.polygon = NULL, mesh.pars = NULL, mu = 0, kappa = N
     w <- as.owin(spatial.polygon)
     y0 <- x0 <- seq(w$xrange[1], w$xrange[2],length=length(proj$x))
     if(mark){
+        if(is.null(beta)) beta <- 1
         mark.im <- outer(x0,y0, mark.function)
         if(ncol(sample)==1){
             logLambda <- matrix(inla.mesh.project(proj, sample),length(proj$x),length(proj$y))
