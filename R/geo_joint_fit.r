@@ -11,68 +11,90 @@
 #' spatio-temporal process we want to ``copy'' into the second column response.
 #' @param temp a numeric vector specifying a temporal index for each observation (starting at 1.....T)
 #' @param family a character vector specifying the assumed likelihoods of the response, by default is c("gaussian,"gaussian").
-#' @param prior.rho prior for the temporal correlation coefficient, by default a \code{pcprior} is used with \code{param=c(0-0.9)}. 
+#' @param prior.rho prior for the temporal correlation coefficient, by default a \code{pcprior} is used with \code{param=c(0-0.9)}.
+#' @param covariates a named data.frame of covariates
 #' @param verbose Logical if \code{TRUE} model fit is output to screen.
-geo.joint.fit <- function(mesh = NULL,  locs = NULL, response = NULL, temp = NULL, family = c("gaussian","gaussian"), prior.rho = list(theta = list(prior='pccor1', param = c(0, 0.9))), hyper = list(theta=list(prior='normal', param=c(0,10))), verbose = FALSE){
-    response.1 <- response[,1]
-    response.2 <- response[,2]
-    # spde model for the spatial random field
-    spde <- inla.spde2.matern(mesh, alpha = 2)
-    if(!is.null(temp)){
-        temp <- temp # temporal dimention
-        k <- max(temp)
-        field.1 <- inla.spde.make.index('field.1', n.spde = spde$n.spde, n.group = k)
-        field.2 <- inla.spde.make.index('field.2', n.spde = spde$n.spde, n.group = k)
-        copy.field.1 <- inla.spde.make.index('copy.field.1', n.spde = spde$n.spde, n.group = k)
-        # make the projector matrix (as both responses are observed at the same locations
-        # this is the same for both
-        A <- inla.spde.make.A(mesh = mesh, loc = locs, n.group = k, group = temp)
-        #create data stacks
-        stack.1 <- inla.stack(data=list(y=cbind(response.1,NA)),
-                              A = list(A), 
-                              tag = 'response.1',
-                              effects = list(field.1 = field.1))
-        stack.2 <- inla.stack(data=list(y=cbind(NA,response.2)),
-                              A = list(A,A), 
-                              tag = 'response.2',
-                              effects = list(field.2 = field.2, copy.field.1 = copy.field.1))
-        stack<-inla.stack(stack.1,stack.2)
-        # temporal model and priors
-        control <- list(model = 'ar1', hyper = prior.rho)
-        #formula and call to inla
-        formula <- y ~ 0 + f(field.1,model = spde, group = field.1.group, control.group = control) +
-            f(field.2, model = spde, group = field.2.group, control.group = control) +
-            f(copy.field.1, copy = 'field.1',fixed = FALSE, hyper = hyper)
+#'
+#' @export
+geo.joint.fit <- function(mesh = NULL, locs.1 = NULL, locs.2 = NULL, response.1 = NULL, response.2 = NULL, t.index = NULL,  covariates = NULL, family = c("gaussian","gaussian"), verbose = FALSE, prior.rho = list(theta = list(prior='pccor1', param = c(0, 0.9))),hyper = list(theta=list(prior='normal', param=c(0,10))), control.inla=list(strategy='gaussian',int.strategy = 'eb')){
+    spde <-inla.spde2.matern(mesh = mesh, alpha = 2)
+    # number of mesh nodes
+    nv <- mesh$n
+    if(!is.null(t.index)){
+        temp <- t.index # temporal dimension
+        k <- (mesh.t <- inla.mesh.1d(temp))$n # number of groups
+        ## create projection matrix for loacations
+        Ast.1 <- inla.spde.make.A(mesh = mesh, loc = locs.1, group = temp, n.group = k)
+        Ast.2 <- inla.spde.make.A(mesh = mesh, loc = locs.2, group = temp, n.group = k)
+        field.1 <- inla.spde.make.index('field.1', n.spde = spde$n.spde, group = temp, n.group = k)
+        field.2 <- inla.spde.make.index('field.2', n.spde = spde$n.spde, group = temp, n.group = k)
+        copy.field <- inla.spde.make.index('copy.field', n.spde = spde$n.spde, group = temp, n.group = k)
+        # temporal model "ar1"
+        ctr.g <- list(model='ar1',param = prior.rho)
+        if(!is.null(covariates)){
+            m <- lgcpSPDE:::make.covs(covariates)
+            cov.effetcs <- m[[1]]
+            cov.form <- m[[2]]
+            #create data stacks
+            stk.pp <- inla.stack(data=list(y=cbind(response.1,NA)),
+                                 A=list(Ast.1,1,1),
+                                 effects=list(field.1 = field.1, beta0 = rep(1,nrow(locs.1)), cov.effets = cov.effects))
+            formula = paste("y", "~  0 + beta0 + alpha0 +", cov.form,
+                    " + f(field.1, model=spde, group = field.1.group, control.group=ctr.g)",
+                    "+ f(field.2, model=spde, group = field.2.group , control.group=ctr.g)",
+                    "+ f(copy.field, copy = field.1, fixed=FALSE )")
+            }else{
+                 stk.pp <- inla.stack(data=list(y=cbind(response.1,NA)),
+                                 A=list(Ast.1,1),
+                                 effects=list(field.1 = field.1, beta0 = rep(1,nrow(locs.1))))
+                  formula <- y ~ 0 + beta0 + alpha0 + f(field.1, model=spde, group = field.1.group, control.group=ctr.g) +
+                      f(field.2, model=spde, group = field.2.group , control.group=ctr.g) +
+                      f(copy.field, copy = "field.1", fixed=FALSE, hyper = hyper )
+                 }
+        stk.mark <- inla.stack(data=list(y=cbind(NA,response.2)),
+                               A=list(Ast.2, Ast.2,1),
+                               effects=list(field.2 = field.2, copy.field = copy.field, alpha0 = rep(1,nrow(locs.2))))
+        ## combine data stacks
+        stack <- inla.stack(stk.pp,stk.mark)
     }else{
-        field.1 <- inla.spde.make.index('field.1', n.spde = spde$n.spde)
-        field.2 <- inla.spde.make.index('field.2', n.spde = spde$n.spde)
-        copy.field.1 <- inla.spde.make.index('copy.field.1', n.spde = spde$n.spde)
-        # make the projector matrix (as both responses are observed at the same locations
-        # this is the same for both
-        A <- inla.spde.make.A(mesh = mesh, loc = locs)
-        #create data stacks
-        stack.1 <- inla.stack(data=list(y=cbind(response.1,NA)),
-                              A = list(A), 
-                              tag = 'response.1',
-                              effects = list(field.1 = field.1))
-        stack.2 <- inla.stack(data=list(y=cbind(NA,response.2)),
-                              A = list(A,A), 
-                              tag = 'response.2',
-                              effects = list(field.2 = field.2, copy.field.1 = copy.field.1))
-        stack<-inla.stack(stack.1,stack.2)
-        #formula and call to inla
-        formula <- y ~ 0 + f(field.1,model = spde) +
-            f(field.2, model = spde) +
-            f(copy.field.1, copy = 'field.1',fixed = FALSE, hyper = hyper)
-    }
-        
-    result = inla(formula, data=inla.stack.data(stack),
-                  family = family,only.hyperparam = FALSE,
-                  control.predictor=list(A=inla.stack.A(stack),compute=TRUE),
-                  control.compute = list(config = TRUE),
-                  verbose = verbose)
-    attributes <- list()
-    attributes$stack <- stack
-    attributes(result) <- c(attributes(result), attributes)
+       
+        ## create projection matrix for loacations
+        Ast1 <- inla.spde.make.A(mesh = mesh, loc = locs.1)
+        Ast2 <- inla.spde.make.A(mesh = mesh, loc = locs.2)
+        field.1 <- field.2 <-  copy.field <-1:nv
+        if(!is.null(covariates)){
+            m <- make.covs(covariates)
+            cov.effects <- m[[1]]
+            cov.form <- m[[2]]
+                                        #create data stacks
+            stk.pp <- inla.stack(data=list(y=cbind(response.1,NA)),
+                                 A=list( Ast1,1,1),
+                                 effects=list(field.1 = field.1, beta0 = rep(1,nrow(locs.1)),cov.effects = cov.effects))
+            formula = paste("y", "~  0 + beta0 + alpha0 +", cov.form,
+                    " + f(field.1, model=spde)",
+                    "+ f(field.2, model=spde)",
+                    "+ f(copy.field, copy = field.1, fixed=FALSE )")
+            }else{
+                 stk.pp <- inla.stack(data=list(y=cbind(response.1,NA)),
+                                 A=list( Ast1,1),
+                                 effects=list(field.1 = field.1, beta0 = rep(1,nrow(locs.1))))
+                  formula <- y ~ 0 + beta0 + alpha0 + f(field.1, model=spde) +
+                      f(field.2, model=spde) +
+                      f(copy.field, copy = "field.1", fixed=FALSE, hyper = hyper )
+                 }
+        stk.mark <- inla.stack(data=list(y=cbind(NA,response.2)),
+                               A=list(Ast2, Ast2,1),
+                               effects=list(field.2 = field.2, copy.field = copy.field, alpha0 = rep(1,nrow(locs.2))))
+        ## combine data stacks
+        stack <- inla.stack(stk.pp,stk.mark)
+        }
+    ##call to inla
+    result <- inla(as.formula(formula), family = family,
+            data=inla.stack.data(stack),
+            control.predictor=list(A=inla.stack.A(stack)),
+            control.inla = control.inla,
+            verbose = verbose,control.compute=list(dic=TRUE))
     result
 }
+                                      
+    

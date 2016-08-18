@@ -10,9 +10,9 @@ Depends:
     R (>= 3.0.0),
     INLA,
     spatstat,
-    maptools
+    maptools,
+    fields
 Imports:
-    fields,
     Matrix
 Description: This package provides functions for the simulation and parameter
     estimation of log Gaussian Cox point process models using INLA/SPDE approach.
