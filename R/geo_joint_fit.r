@@ -39,10 +39,11 @@ geo.joint.fit <- function(mesh = NULL, locs.1 = NULL, locs.2 = NULL, response.1 
             stk.pp <- inla.stack(data=list(y=cbind(response.1,NA)),
                                  A=list(Ast.1,1,1),
                                  effects=list(field.1 = field.1, beta0 = rep(1,nrow(locs.1)), cov.effets = cov.effects))
+            x = "\"field.1\""
             formula = paste("y", "~  0 + beta0 + alpha0 +", cov.form,
                     " + f(field.1, model=spde, group = field.1.group, control.group=ctr.g)",
                     "+ f(field.2, model=spde, group = field.2.group , control.group=ctr.g)",
-                    "+ f(copy.field, copy = field.1, fixed=FALSE )")
+                    "+ f(copy.field, copy =", x, ",fixed=FALSE )")
             }else{
                  stk.pp <- inla.stack(data=list(y=cbind(response.1,NA)),
                                  A=list(Ast.1,1),
@@ -70,10 +71,11 @@ geo.joint.fit <- function(mesh = NULL, locs.1 = NULL, locs.2 = NULL, response.1 
             stk.pp <- inla.stack(data=list(y=cbind(response.1,NA)),
                                  A=list( Ast1,1,1),
                                  effects=list(field.1 = field.1, beta0 = rep(1,nrow(locs.1)),cov.effects = cov.effects))
+            x = "\"field.1\""
             formula = paste("y", "~  0 + beta0 + alpha0 +", cov.form,
                     " + f(field.1, model=spde)",
                     "+ f(field.2, model=spde)",
-                    "+ f(copy.field, copy = field.1, fixed=FALSE )")
+                    "+ f(copy.field, copy =", x, ",fixed=FALSE )")
             }else{
                  stk.pp <- inla.stack(data=list(y=cbind(response.1,NA)),
                                  A=list( Ast1,1),

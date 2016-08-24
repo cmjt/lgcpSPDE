@@ -44,10 +44,11 @@ mark.pp.fit <- function(mesh = NULL, locs=NULL, t.index = NULL, mark = NULL, cov
             stk.pp <- inla.stack(data=list(y=cbind(y.pp,NA), e=expected),
                                  A=list(rBind(Diagonal(n=k*nv), Ast),1),
                                  effects=list(field.pp = field.pp, cov.effets = cov.effects))
+            x = "\"field.1\""
             formula = paste("y", "~  0 + ", cov.form,
                     " + f(field.pp, model=spde, group = field.pp.group, control.group=ctr.g)",
                     "+ f(field.mark, model=spde, group = field.mark.group , control.group=ctr.g)",
-                    "+ f(copy.field, copy = field.pp, fixed=FALSE )")
+                    "+ f(copy.field, copy =",x ,", fixed=FALSE )")
             }else{
                  stk.pp <- inla.stack(data=list(y=cbind(y.pp,NA), e=expected),
                                  A=list(rBind(Diagonal(n=k*nv), Ast)),
@@ -78,10 +79,11 @@ mark.pp.fit <- function(mesh = NULL, locs=NULL, t.index = NULL, mark = NULL, cov
             stk.pp <- inla.stack(data=list(y=cbind(y.pp,NA), e=expected),
                                  A=list(rBind(Diagonal(n=nv), Ast),1),
                                  effects=list(field.pp = field.pp, cov.effets = cov.effects))
+            x = "\"field.1\""
             formula = paste("y", "~  0 + ", cov.form,
                     " + f(field.pp, model=spde)",
                     "+ f(field.mark, model=spde)",
-                    "+ f(copy.field, copy = field.pp, fixed=FALSE )")
+                    "+ f(copy.field, copy =",x ,", fixed=FALSE )")
             }else{
                  stk.pp <- inla.stack(data=list(y=cbind(y.pp,NA), e=expected),
                                  A=list(rBind(Diagonal(n=nv), Ast)),
