@@ -20,52 +20,122 @@ inwin<-function(proj, window){
 }
 
 
-## model fit for ant model (will generalise at some point) i.e. spatio temporal with two marks that is, p/a or ant nests, and p/a of pests
-
-ants.pp.fit <- function(mesh = NULL, locs=NULL, marks = NULL, covariates = NULL, mark.family = c("binomial","binomial"), verbose = FALSE,hyper = list(theta=list(prior='normal', param=c(0,10)))){
+                                      
+#############################
+fit.two.marks.lgcp <- function(mesh = NULL, locs=NULL, t.index = NULL, mark.1 = NULL,  mark.2 = NULL, covariates = NULL, mark.family = c("gaussian","gaussian"), verbose = FALSE, prior.rho = list(theta = list(prior='pccor1', param = c(0, 0.9))),hyper = list(theta=list(prior='normal', param=c(0,10)))){
     spde <-inla.spde2.matern(mesh = mesh, alpha = 2)
     # number of observations
     n <- nrow(locs)
     # number of mesh nodes
     nv <- mesh$n
-    ## the response for the point pattern locations
-    y.pp <- rep(0:1, c( nv, n))
-    mark.1 <- marks[,1]
-    mark.2 <- marks[,2]
-    ## create projection matrix for loacations
-    Ast <- inla.spde.make.A(mesh = mesh, loc = locs)
-    ##effect for LGCP used for point pattern
-    st.volume <- diag(spde$param.inla$M0)
-    expected <- c(st.volume, rep(0, n))
-    field.pp <- field.mark.1 <-  copy.field.mark.1 <- copy.field.1 <-  copy.field.2 <- 1:nv                            
-    stk.pp <- inla.stack(data=list(y=cbind(y.pp,NA,NA), e=expected),
-                         A=list(rBind(Diagonal(n=nv), Ast)),
-                         effects=list(field.pp = field.pp))
-    stk.mark.1 <- inla.stack(data=list(y=cbind(NA,mark.1,NA)),
-                             A=list(Ast, Ast),
-                             effects=list(field.mark.1 = field.mark.1, copy.field.1 = copy.field.1))
-    stk.mark.2 <- inla.stack(data=list(y=cbind(NA,NA,mark.2)),
-                             A=list(Ast, Ast ),
-                             effects=list(copy.field.mark.1 = copy.field.mark.1, copy.field.2 = copy.field.2))
-    stack <- inla.stack(stk.pp,stk.mark.1, stk.mark.2)
-    formula <- y ~ 0 + f(field.pp, model=spde) +
-        f(field.mark.1, model=spde) +
-        f(copy.field.1, copy = "field.pp") +
-        f(copy.field.2, copy = "field.pp" ) +
-        f(copy.field.mark.1, copy = "field.mark.1", fixed=FALSE, hyper = hyper )
+    if(!is.null(t.index)){
+        temp <- t.index # temporal dimention
+        k <- (mesh.t <- inla.mesh.1d(temp))$n # number of groups
+        ## the response for the point pattern locations
+        y.pp <- rep(0:1, c(k * nv, n))
+        ## create projection matrix for loacations
+        Ast <- inla.spde.make.A(mesh = mesh, loc = locs, group = temp, n.group = k)
+        ##effect for LGCP used for point pattern
+        st.volume <- diag(kronecker(Diagonal(n = k),spde$param.inla$M0))
+        expected <- c(st.volume, rep(0, n))
+        field.pp <- inla.spde.make.index('field.pp', n.spde = spde$n.spde, group = temp, n.group = k)
+        field.mark <- inla.spde.make.index('field.mark', n.spde = spde$n.spde, group = temp, n.group = k)
+        copy.field <- inla.spde.make.index('copy.field', n.spde = spde$n.spde, group = temp, n.group = k)
+        cpoy.field.mark <- inla.spde.make.index('copy.field.mark', n.spde = spde$n.spde, group = temp, n.group = k)
+        copy.field2 <- inla.spde.make.index('copy.field2', n.spde = spde$n.spde, group = temp, n.group = k)
+        # temporal model "ar1"
+        ctr.g <- list(model='ar1',param = prior.rho)
+        if(!is.null(covariates)){
+            m <- make.covs(covariates)
+            cov.effetcs <- m[[1]]
+            cov.form <- m[[2]]
+                                        #create data stacks
+            stk.pp <- inla.stack(data=list(y=cbind(y.pp,NA,NA), e=expected),
+                                 A=list(rBind(Diagonal(n=k*nv), Ast),1),
+                                 effects=list(field.pp = field.pp, cov.effets = cov.effects))
+            x = "\"field.pp\""
+            y =  "\"field.mark\""
+            formula = paste("y", "~  0 ", cov.form,
+                    " + f(field.pp, model=spde, group = field.pp.group, control.group=ctr.g)",
+                    "+ f(field.mark, model=spde, group = field.mark.group , control.group=ctr.g)",
+                    "+ f(copy.field, copy =",x" )",
+                    "+ f(copy.field2, copy =",x,")",
+                    " + f(copy.field.mark, copy =",y,",fixed = FALSE, hyper = hyper)")
+            }else{
+                 stk.pp <- inla.stack(data=list(y=cbind(y.pp,NA,NA), e=expected),
+                                 A=list(rBind(Diagonal(n=k*nv), Ast)),
+                                 effects=list(field.pp = field.pp))
+                  formula <- y ~ 0 + f(field.pp, model=spde, group = field.pp.group, control.group=ctr.g) +
+                      f(field.mark, model=spde, group = field.mark.group , control.group=ctr.g) +
+                      f(copy.field, copy = "field.pp") +
+                      f(copy.field2, copy = "field.pp") +
+                      f(copy.field.mark, copy = "field.mark", fixed = FALSE, hyper = hyper )
+                 }
+        stk.mark.1 <- inla.stack(data=list(y=cbind(NA,mark.1,NA)),
+                               A=list(Ast, Ast),
+                               effects=list(field.mark = field.mark, copy.field = copy.field))
+        stk.mark.2 <- inla.stack(data=list(y=cbind(NA,NA,mark.2)),
+                               A=list(Ast, Ast),
+                               effects=list(copy.field.mark = copy.field.mark, copy.field2 = copy.field2))
+        ## combine data stacks
+        stack <- inla.stack(stk.pp,stk.mark.1,stk.mark.1)
+    }else{
+        y.pp <- rep(0:1, c( nv, n))
+        ## create projection matrix for loacations
+        Ast <- inla.spde.make.A(mesh = mesh, loc = locs)
+        ##effect for LGCP used for point pattern
+        st.volume <- diag(spde$param.inla$M0)
+        expected <- c(st.volume, rep(0, n))
+                                        #fields
+        field.pp <- field.mark <-  copy.field <-1:nv
+        if(!is.null(covariates)){
+            m <- make.covs(covariates)
+            cov.effetcs <- m[[1]]
+            cov.form <- m[[2]]
+                                        #create data stacks
+            stk.pp <- inla.stack(data=list(y=cbind(y.pp,NA,NA), e=expected),
+                                 A=list(rBind(Diagonal(n=nv), Ast),1),
+                                 effects=list(field.pp = field.pp, cov.effets = cov.effects))
+            x = "\"field.pp\""
+            y =  "\"field.mark\""
+            formula = paste("y", "~  0  + ", cov.form,
+                    " + f(field.pp, model=spde)",
+                    "+ f(field.mark, model=spde)",
+                    "+ f(copy.field, copy =",x ,")",
+                    "+ f(copy.field2, copy =",x,")",
+                    " + f(copy.field.mark, copy =",y,",fixed = FALSE, hyper = hyper)"))
+            }else{
+                 stk.pp <- inla.stack(data=list(y=cbind(y.pp,NA,NA), e=expected),
+                                 A=list(rBind(Diagonal(n=nv), Ast)),
+                                 effects=list(field.pp = field.pp))
+                  formula <- y ~ 0  + f(field.pp, model=spde) +
+                      f(field.mark, model=spde) +
+                      f(copy.field, copy = "field.pp")+
+                      f(copy.field2, copy = "field.pp") +
+                      f(copy.field.mark, copy = "field.mark", fixed = FALSE, hyper = hyper)
+                 }
+        stk.mark <- inla.stack(data=list(y=cbind(NA,mark.1,NA)),
+                               A=list(Ast, Ast),
+                               effects=list(field.mark = field.mark, copy.field = copy.field))
+        stk.mark.2 <- inla.stack(data=list(y=cbind(NA,NA,mark.2)),
+                               A=list(Ast, Ast),
+                               effects=list(copy.field.mark = copy.field.mark, copy.field2 = copy.field2))
+        ## combine data stacks
+        stack <- inla.stack(stk.pp,stk.mark.1,stk.mark.1)
+        }
     ##call to inla
     result <- inla(formula, family = c("poisson",mark.family),
             data=inla.stack.data(stack),
             E=inla.stack.data(stack)$e,
-            control.predictor=list(A=inla.stack.A(stack),compute = TRUE),
-            control.inla=list(strategy='gaussian',int.strategy = "eb"),
-            num.threads = 4,
+            control.predictor=list(A=inla.stack.A(stack)),
+            control.inla=list(strategy='gaussian',int.strategy = 'eb'),
             verbose = verbose)
-    
     result
 }
                                       
     
+
+#############################
 
 ## function to fit owl marked pp model including snowfall information (that is covariate with misalignment) (need to generalise)
 owls.pp.fit <- function(mesh = NULL, locs.pp=NULL, locs.cov = NULL, covariate = NULL,  mark = NULL,  mark.family = "binomial", covariate.family = "gaussian", verbose = FALSE, hyper = list(theta=list(prior='normal', param=c(0,10)))){

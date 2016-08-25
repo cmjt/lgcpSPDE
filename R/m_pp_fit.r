@@ -15,7 +15,7 @@
 #'
 #' @importMethodsFrom Matrix diag
 #' @export
-mark.pp.fit <- function(mesh = NULL, locs=NULL, t.index = NULL, mark = NULL, covariates = NULL, mark.family = "gaussian", verbose = FALSE, prior.rho = list(theta = list(prior='pccor1', param = c(0, 0.9))),hyper = list(theta=list(prior='normal', param=c(0,10)))){
+fit.marked.lgcp <- function(mesh = NULL, locs=NULL, t.index = NULL, mark = NULL, covariates = NULL, mark.family = "gaussian", verbose = FALSE, prior.rho = list(theta = list(prior='pccor1', param = c(0, 0.9))),hyper = list(theta=list(prior='normal', param=c(0,10)))){
     spde <-inla.spde2.matern(mesh = mesh, alpha = 2)
     # number of observations
     n <- nrow(locs)
@@ -44,8 +44,8 @@ mark.pp.fit <- function(mesh = NULL, locs=NULL, t.index = NULL, mark = NULL, cov
             stk.pp <- inla.stack(data=list(y=cbind(y.pp,NA), e=expected),
                                  A=list(rBind(Diagonal(n=k*nv), Ast),1),
                                  effects=list(field.pp = field.pp, cov.effets = cov.effects))
-            x = "\"field.1\""
-            formula = paste("y", "~  0 + ", cov.form,
+            x = "\"field.pp\""
+            formula = paste("y", "~  0 ", cov.form,
                     " + f(field.pp, model=spde, group = field.pp.group, control.group=ctr.g)",
                     "+ f(field.mark, model=spde, group = field.mark.group , control.group=ctr.g)",
                     "+ f(copy.field, copy =",x ,", fixed=FALSE )")
@@ -79,8 +79,8 @@ mark.pp.fit <- function(mesh = NULL, locs=NULL, t.index = NULL, mark = NULL, cov
             stk.pp <- inla.stack(data=list(y=cbind(y.pp,NA), e=expected),
                                  A=list(rBind(Diagonal(n=nv), Ast),1),
                                  effects=list(field.pp = field.pp, cov.effets = cov.effects))
-            x = "\"field.1\""
-            formula = paste("y", "~  0 + ", cov.form,
+            x = "\"field.pp\""
+            formula = paste("y", "~  0  + ", cov.form,
                     " + f(field.pp, model=spde)",
                     "+ f(field.mark, model=spde)",
                     "+ f(copy.field, copy =",x ,", fixed=FALSE )")
@@ -88,7 +88,7 @@ mark.pp.fit <- function(mesh = NULL, locs=NULL, t.index = NULL, mark = NULL, cov
                  stk.pp <- inla.stack(data=list(y=cbind(y.pp,NA), e=expected),
                                  A=list(rBind(Diagonal(n=nv), Ast)),
                                  effects=list(field.pp = field.pp))
-                  formula <- y ~ 0 + f(field.pp, model=spde) +
+                  formula <- y ~ 0  + f(field.pp, model=spde) +
                       f(field.mark, model=spde) +
                       f(copy.field, copy = "field.pp", fixed=FALSE, hyper = hyper )
                  }
