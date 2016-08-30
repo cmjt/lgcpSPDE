@@ -22,30 +22,31 @@ find.fields <- function(x = NULL, mesh = NULL, n.t = NULL, sd = FALSE, plot = FA
     proj <- inla.mesh.projector(mesh)
     if(!is.null(spatial.polygon)) inside <- inwin(proj,as.owin(spatial.polygon))
     spde <-inla.spde2.matern(mesh = mesh, alpha = 2)
-    fields <- names(x$summary.random)
+    fields <- summary(x)$random.names[summary(x)$random.model=="SPDE2 model" | summary(x)$random.model=="Copy"]
+    idx <- which(summary(x)$random.model=="SPDE2 model" | summary(x)$random.model=="Copy")
     n <- length(fields)
     if(!is.null(n.t)){
         t <- n.t
         means <- list()
-        for (i in 1:n){
-            means [[i]] <- lapply(1:t, function(j) { r <- inla.mesh.project(proj, field = x$summary.random[[i]]$mean[1:spde$n.spde + (j-1)*spde$n.spde]);  if(!is.null(spatial.polygon)) r[!inside] <- NA; return(r)})
+        for (i in idx[1]:idx[n]){
+            means [[i-idx[1]+1]] <- lapply(1:t, function(j) { r <- inla.mesh.project(proj, field = x$summary.random[[i]]$mean[1:spde$n.spde + (j-1)*spde$n.spde]);  if(!is.null(spatial.polygon)) r[!inside] <- NA; return(r)})
         }
         sds <- list()
-        for (i in 1:n){
-            sds [[i]] <- lapply(1:t, function(j) {r <- inla.mesh.project(proj, field = x$summary.random[[i]]$sd[1:spde$n.spde + (j-1)*spde$n.spde]);if(!is.null(spatial.polygon)) r[!inside] <- NA;  return(r)})
+        for (i in idx[1]:idx[n]){
+            sds [[i-idx[1]+1]] <- lapply(1:t, function(j) {r <- inla.mesh.project(proj, field = x$summary.random[[i]]$sd[1:spde$n.spde + (j-1)*spde$n.spde]);if(!is.null(spatial.polygon)) r[!inside] <- NA;  return(r)})
         }
-        if(!is.null(spatial.polygon)) for(i in 1:n){sds[[i]][!inside] <- NA}
+        if(!is.null(spatial.polygon)) for(i in 1:n){sds[[i-idx[1]+1]][!inside] <- NA}
         if(plot){plot.fields( x = x, mesh = mesh, n.t = n.t, sd = sd, spatial.polygon = spatial.polygon,...)}
     }else{
         means <- list()
-        for (i in 1:n){
-            means[[i]] <- inla.mesh.project(proj,x$summary.random[[i]]$mean)
-            if(!is.null(spatial.polygon)) means[[i]][!inside] <- NA; 
+        for (i in idx[1]:idx[n]){
+            means[[i-idx[1]+1]] <- inla.mesh.project(proj,x$summary.random[[i]]$mean)
+            if(!is.null(spatial.polygon)) means[[i-idx[1]+1]][!inside] <- NA; 
             }
         sds <- list()
-        for (i in 1:n){
-            sds[[i]] <- inla.mesh.project(proj,x$summary.random[[i]]$sd)
-            if(!is.null(spatial.polygon)) sds[[i]][!inside] <- NA; 
+        for (i in idx[1]:idx[n]){
+            sds[[i-idx[1]+1]] <- inla.mesh.project(proj,x$summary.random[[i]]$sd)
+            if(!is.null(spatial.polygon)) sds[[i-idx[1]+1]][!inside] <- NA; 
             }
         if(plot){plot.fields( x = x, mesh = mesh, n.t = n.t, sd = sd, spatial.polygon = spatial.polygon,...)}
     }

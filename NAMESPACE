@@ -2,9 +2,9 @@
 
 export(find.fields)
 export(fit.lgcp)
+export(fit.marked.lgcp)
 export(geo.joint.fit)
 export(make.mesh)
-export(mark.pp.fit)
 export(rgeospde)
 export(rlgcpspde)
 import(INLA)
