@@ -30,15 +30,16 @@ rlgcpspde<-function (spatial.polygon = NULL, mesh.pars = NULL, mu = 0, kappa = N
     y0 <- x0 <- seq(w$xrange[1], w$xrange[2],length=length(proj$x))
     if(mark){
         if(is.null(beta)) beta <- 1
-        mark.im <- outer(x0,y0, mark.function)
+        if(class(mark.function)=="matrix") mark.im <- mark.function else mark.im <- outer(x0,y0, mark.function)
         if(ncol(sample)==1){
-            logLambda <- matrix(inla.mesh.project(proj, sample),length(proj$x),length(proj$y))
+            logLambda <- matrix(inla.mesh.project(proj, sample),length(proj$x),length(proj$y)) 
+            jointLL <- logLambda + beta*mark.im
             set.seed(seed)
-            pp <-rpoispp(as.im(exp(logLambda), W = w))[w]
+            pp <-rpoispp(as.im(exp(jointLL), W = w))[w]
             loc <- cbind(pp$x,pp$y)
             mark <- mark.im[Reduce('cbind', nearest.pixel(loc[,1],loc[,2],im(mark.im, x0, y0)))]
             ppstruct <- logLambda[Reduce('cbind', nearest.pixel(loc[,1],loc[,2],im(logLambda, x0, y0)))]
-            mark <- mark + beta*ppstruct
+            #mark <- mark + beta*ppstruct
             result <- cbind(x = loc[,1],y = loc[,2], mark = mark)
         }else{
             logLambda <- lapply(1:ncol(sample), function(j) {
