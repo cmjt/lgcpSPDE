@@ -8,7 +8,7 @@
 #' \code{cutoff} length at which to cut off triangle edge lengths,
 #' \code{min} triangle edge length inside region,
 #' and \code{max} triangle edge length inside region.
-#' @param mu numeric, the intercept term to simulate a LGCP, by default is 0.
+#' @param mu numeric or a function of x,y, and z, the intercept term to simulate a LGCP, by default is 0.
 #' @param kappa a numeric constant, parameter of the SPDE model.
 #' @param sigma2 a numeric constant, parameter of the SPDE model, by default this is 0.05.
 #' @param n a numeric constant defining the number of time points, by default 1.
@@ -19,12 +19,20 @@
 #' @param mark.function a function of 2D spatial coordinates which describes the spatial process
 #' specific to the mark, by default this is \code{function(x,y) cos(x) - sin(y)}.
 #' @param seed seed for the simulation, by default this is 1
+#' @param non.stat a named list the first element \code{fn} the spatial function which kappa varies with
+#' and \code{theta} a vctor of length 3 specifying the theta values of the non-stationary model
 #' @export
 
-rlgcpspde<-function (spatial.polygon = NULL, mesh.pars = NULL, mu = 0, kappa = NULL, sigma2 = 0.05 , n = 1, rho = 0.9, mark = FALSE, beta = NULL, mark.function = function(x,y) cos(x) - sin(y), seed = 1){
+rlgcpspde<-function (spatial.polygon = NULL, mesh.pars = NULL, mu = 0, kappa = NULL, sigma2 = 0.05 , n = 1, rho = 0.9, mark = FALSE, beta = NULL, mark.function = function(x,y) cos(x) - sin(y), seed = 1, non.stat = NULL){
     mesh <- make.mesh(mesh.pars = mesh.pars, spatial.polygon = spatial.polygon)
     locs <- mesh$loc
-    sample <- mu + rgeospde(locs = locs, mesh = mesh, kappa = kappa, sigma2 = sigma2, n = n, rho = rho, seed = seed)
+    if(class(mu)=="function"){mu <- mu(x = locs[,1], y = locs[,2], z = locs[,3])}
+    if(!is.null(non.stat)){
+        sample <- mu + rgeospde(locs = locs, mesh = mesh, seed = seed,
+                                non.stat = non.stat)}else{
+                                                        sample <- mu + rgeospde(locs = locs, mesh = mesh,
+                                                                                kappa = kappa, sigma2 = sigma2, n = n,
+                                                                                rho = rho, seed = seed)}
     proj<-inla.mesh.projector(mesh = mesh)
     w <- as.owin(spatial.polygon)
     y0 <- x0 <- seq(w$xrange[1], w$xrange[2],length=length(proj$x))

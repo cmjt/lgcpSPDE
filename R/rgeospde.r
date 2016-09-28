@@ -12,14 +12,20 @@
 #' @param rho the ar1 correlation coefficient for spatio-temporal samples,
 #' by default this is 0.9.
 #' @param seed seed for the simulation, by default this is 1
+#' @param non.stat a named list the first element \code{fn} the spatial function which kappa varies with
+#' and \code{theta} a vctor of length 3 specifying the theta values of the non-stationary model
 #' @export
-rgeospde <- function( locs = NULL,mesh = NULL, kappa = NULL, sigma2 = 1,n = 1, rho = 0.9, seed = 1){
-    # define the spde model for the domain
-    spde <- inla.spde2.matern(mesh = mesh, alpha=2)
-    # define theta
-    theta <- c(-0.5 * log(4 * pi * sigma2 * kappa^2), log(kappa))
-    # precision matrix
-    Q <- inla.spde2.precision(spde, theta)
+rgeospde <- function( locs = NULL,mesh = NULL, kappa = NULL, sigma2 = 1,n = 1, rho = 0.9, seed = 1, non.stat = NULL){
+    if(!is.null(non.stat)){
+        fn <- non.stat[["fn"]]
+        theta <- non.stat[["theta"]]
+        B.kappa <- cbind(0,0,1,fn)
+        spde <- inla.spde2.matern(mesh = mesh,
+                                 alpha = 2, B.tau = cbind(0,1,0,0),
+                                 B.kappa = B.kappa)}else{
+                                                       spde <- inla.spde2.matern(mesh = mesh, alpha=2)
+                                                       theta <- c(-0.5 * log(4 * pi * sigma2 * kappa^2), log(kappa))}
+    Q <- inla.spde2.precision(spde, theta) # PRECISION MATRIX
     #projector matrix
     A <- inla.mesh.project(mesh = mesh,loc = locs)$A
     if (n == 1) {

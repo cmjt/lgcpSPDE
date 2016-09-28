@@ -179,4 +179,32 @@ owls.pp.fit <- function(mesh = NULL, locs.pp=NULL, locs.cov = NULL, covariate = 
 }
     
                                        
-    
+######################### fit non stat    
+fit.lgcp.ns <- function(mesh = NULL, locs = NULL, ns = NULL){
+    if(!ns[["TMB"]]){
+        fn <- ns[["fn"]]
+        B.kappa <- cbind(0,0,1,fn)
+        spde <- inla.spde2.matern(mesh = mesh,
+                                  alpha = 2, B.tau = cbind(0,1,0,0),
+                                  B.kappa = B.kappa)
+        nv <- mesh$n
+        Ast <- inla.spde.make.A(mesh = mesh, loc = locs)
+        field  <- 1:nv
+        st.volume <- diag(spde$param.inla$M0)
+        expected <- c(st.volume, rep(0, n))
+        A.pp <- rBind(Diagonal(n=nv), Ast)
+        y.pp <- rep(0:1, c(nv, n))
+        stack <- inla.stack(data=list(y=y.pp, e=expected),
+                            A=list(A.pp,1),
+                             effects=list(field = field, b0 = rep(1,nv+n)))
+        formula <- y ~ 0  + b0 + f(field, model=spde)
+        result <- inla(as.formula(formula), family = "poisson",
+                       data=inla.stack.data(stack),
+                       E=inla.stack.data(stack)$e,
+                       control.predictor=list(A=inla.stack.A(stack)),
+                       control.inla = control.inla,
+                       verbose = verbose)}else{}
+    result
+}
+                                             
+                        
