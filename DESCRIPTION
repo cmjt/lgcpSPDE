@@ -11,9 +11,15 @@ Depends:
     INLA,
     spatstat,
     maptools,
-    fields
+    fields,
+    TMB,
+    Rcpp
 Imports:
     Matrix
+LinkingTo: 
+	Rcpp,
+	TMB,
+	Matrix	
 Description: This package provides functions for the simulation and parameter
     estimation of log Gaussian Cox point process models using INLA/SPDE approach.
 License: GPL

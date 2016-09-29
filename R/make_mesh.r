@@ -38,7 +38,7 @@ make.mesh<-function(locs = NULL, mesh.pars = NULL, spatial.polygon = NULL, spher
         if(!is.null(spatial.polygon)){
             # creates triangulation based on a spatial polygon of the domain
             boundary <- inla.sp2segment(spatial.polygon)
-            mesh <- inla.mesh.2d(boundary = boundary, max.edge = max.edge, cutoff = cutoff)
+            mesh <- inla.mesh.2d(boundary = boundary,loc = locs, max.edge = max.edge, cutoff = cutoff)
         } else {
             loc <- locs
             # creates triangulation based on the locations of the point pattern
@@ -49,7 +49,7 @@ make.mesh<-function(locs = NULL, mesh.pars = NULL, spatial.polygon = NULL, spher
             # creates triangulation based on a spatial polygon of the domain projected onto a sphere
             boundary <- inla.sp2segment(spatial.polygon)
             boundary$loc <- inla.mesh.map(boundary$loc, projection="longlat", inverse=TRUE)
-            mesh <- inla.mesh.2d(boundary = boundary, max.edge = max.edge, cutoff = cutoff)
+            mesh <- inla.mesh.2d(boundary = boundary,loc = locs, max.edge = max.edge, cutoff = cutoff)
         } else {
             # creates triangulation based on the locations of the point pattern projected onto a sphere
             locs <- inla.mesh.map(locs, projection="longlat", inverse=TRUE)

@@ -180,8 +180,8 @@ owls.pp.fit <- function(mesh = NULL, locs.pp=NULL, locs.cov = NULL, covariate = 
     
                                        
 ######################### fit non stat    
-fit.lgcp.ns <- function(mesh = NULL, locs = NULL, ns = NULL){
-    if(!ns[["TMB"]]){
+fit.lgcp.ns <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla = NULL, verbose = NULL){
+    if(is.null(ns[["TMB"]])){
         fn <- ns[["fn"]]
         B.kappa <- cbind(0,0,1,fn)
         spde <- inla.spde2.matern(mesh = mesh,
@@ -191,19 +191,27 @@ fit.lgcp.ns <- function(mesh = NULL, locs = NULL, ns = NULL){
         Ast <- inla.spde.make.A(mesh = mesh, loc = locs)
         field  <- 1:nv
         st.volume <- diag(spde$param.inla$M0)
-        expected <- c(st.volume, rep(0, n))
+        expected <- c(st.volume, rep(0, nrow(locs)))
         A.pp <- rBind(Diagonal(n=nv), Ast)
-        y.pp <- rep(0:1, c(nv, n))
+        y.pp <- rep(0:1, c(nv, nrow(locs)))
         stack <- inla.stack(data=list(y=y.pp, e=expected),
                             A=list(A.pp,1),
-                             effects=list(field = field, b0 = rep(1,nv+n)))
+                             effects=list(field = field, b0 = rep(1,nv+nrow(locs))))
         formula <- y ~ 0  + b0 + f(field, model=spde)
         result <- inla(as.formula(formula), family = "poisson",
                        data=inla.stack.data(stack),
                        E=inla.stack.data(stack)$e,
                        control.predictor=list(A=inla.stack.A(stack)),
                        control.inla = control.inla,
-                       verbose = verbose)}else{}
+                       verbose = verbose)}else{
+                                        # Loading DLLs.
+                                             dll.dir <- paste(system.file(package = "lgcpSPDE"), "/tmb/bin/", sep = "")
+                                             for (i in paste(dll.dir, list.files(dll.dir), sep = "")){
+                                                 dyn.load(i)
+                                             }
+                                            
+                                         }
+    
     result
 }
                                              
