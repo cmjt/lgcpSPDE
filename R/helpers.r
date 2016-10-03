@@ -180,39 +180,78 @@ owls.pp.fit <- function(mesh = NULL, locs.pp=NULL, locs.cov = NULL, covariate = 
     
                                        
 ######################### fit non stat    
-fit.lgcp.ns <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla = NULL, verbose = NULL){
-    if(is.null(ns[["TMB"]])){
-        fn <- ns[["fn"]]
-        B.kappa <- cbind(0,0,1,fn)
-        spde <- inla.spde2.matern(mesh = mesh,
-                                  alpha = 2, B.tau = cbind(0,1,0,0),
-                                  B.kappa = B.kappa)
-        nv <- mesh$n
-        Ast <- inla.spde.make.A(mesh = mesh, loc = locs)
-        field  <- 1:nv
-        st.volume <- diag(spde$param.inla$M0)
-        expected <- c(st.volume, rep(0, nrow(locs)))
-        A.pp <- rBind(Diagonal(n=nv), Ast)
-        y.pp <- rep(0:1, c(nv, nrow(locs)))
-        stack <- inla.stack(data=list(y=y.pp, e=expected),
-                            A=list(A.pp,1),
-                             effects=list(field = field, b0 = rep(1,nv+nrow(locs))))
-        formula <- y ~ 0  + b0 + f(field, model=spde)
-        result <- inla(as.formula(formula), family = "poisson",
-                       data=inla.stack.data(stack),
-                       E=inla.stack.data(stack)$e,
-                       control.predictor=list(A=inla.stack.A(stack)),
-                       control.inla = control.inla,
-                       verbose = verbose)}else{
-                                        # Loading DLLs.
-                                             dll.dir <- paste(system.file(package = "lgcpSPDE"), "/tmb/bin/", sep = "")
-                                             for (i in paste(dll.dir, list.files(dll.dir), sep = "")){
-                                                 dyn.load(i)
-                                             }
-                                            
-                                         }
-    
+fit.ns.kappa.inla <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla = NULL, verbose = NULL){
+    fn <- ns[["fn"]]
+    B.kappa <- cbind(0,0,1,fn)
+    spde <- inla.spde2.matern(mesh = mesh,
+                              alpha = 2, B.tau = cbind(0,1,0,0),
+                              B.kappa = B.kappa)
+    nv <- mesh$n
+    Ast <- inla.spde.make.A(mesh = mesh, loc = locs)
+    field  <- 1:nv
+    st.volume <- diag(spde$param.inla$M0)
+    expected <- c(st.volume, rep(0, nrow(locs)))
+    A.pp <- rBind(Diagonal(n=nv), Ast)
+    y.pp <- rep(0:1, c(nv, nrow(locs)))
+    stack <- inla.stack(data=list(y=y.pp, e=expected),
+                        A=list(A.pp,1),
+                        effects=list(field = field, b0 = rep(1,nv+nrow(locs))))
+    formula <- y ~ 0  + b0 + f(field, model=spde)
+    result <- inla(as.formula(formula), family = "poisson",
+                   data=inla.stack.data(stack),
+                   E=inla.stack.data(stack)$e,
+                   control.predictor=list(A=inla.stack.A(stack)),
+                   control.inla = control.inla,
+                   verbose = verbose)
     result
 }
                                              
-                        
+####                       
+fit.ns.kappa.TMB <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla = NULL, verbose = NULL){
+    fn <- ns[["fn"]]
+    B.kappa <- cbind(0,0,1,fn)
+    spde <- inla.spde2.matern(mesh = mesh,
+                              alpha = 2, B.tau = cbind(0,1,0,0),
+                              B.kappa = B.kappa)
+    resp <- numeric(mesh$n)
+    resp.c <-as.vector(table(mesh$idx$loc))
+    resp[unique(mesh$idx$loc)]<- resp.c
+    meshidxloc <- 1:mesh$n
+    data <- list(resp = resp, meshidxloc=meshidxloc)
+    data$spde <- spde$param.inla[c("M0","M1","M2","B1","B2")]	# Encapsulation of 6 matrices
+    data$area <- c(diag(data$spde$M0))
+    parameters <- ns[["parameters"]]
+    obj <- MakeADFun(data,parameters,random="x",DLL="nonstat")
+    opt <- nlminb(obj$par,obj$fn,obj$gr)
+    result <- sdreport(obj)
+    result
+    result
+}
+                                             
+                   
+
+
+
+
+
+
+
+
+
+
+#############ns mean TMB
+fit.ns.mean.TMB <- function(mesh = NULL, locs = NULL, ns = NULL){
+    resp <- numeric(mesh$n)
+    resp.c <-as.vector(table(mesh$idx$loc))
+    resp[unique(mesh$idx$loc)]<- resp.c
+    meshidxloc <- 1:mesh$n
+    data <- list(resp = resp, meshidxloc=meshidxloc)
+    spde <- inla.spde2.matern(mesh = mesh,alpha = 2)
+    data$spde <- spde$param.inla[c("M0","M1","M2")]	# Encapsulation of 6 matrices
+    data$area <- c(diag(data$spde$M0))
+    parameters <- ns[["parameters"]]
+    obj <- MakeADFun(data,parameters,random="x",DLL="nonstatmean")
+    opt <- nlminb(obj$par,obj$fn,obj$gr)
+    result <- sdreport(obj)
+    result
+}
