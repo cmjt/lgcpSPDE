@@ -179,8 +179,9 @@ owls.pp.fit <- function(mesh = NULL, locs.pp=NULL, locs.cov = NULL, covariate = 
 }
     
                                        
-######################### fit non stat    
+######################### fit non standard i.e. non-stationary or TMB    
 fit.ns.kappa.inla <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla = NULL, verbose = NULL){
+    if(is.null(ns[["fn"]]))stop("conjectured non-stationary function must be supplied")
     fn <- ns[["fn"]]
     B.kappa <- cbind(0,0,1,fn)
     spde <- inla.spde2.matern(mesh = mesh,
@@ -208,6 +209,8 @@ fit.ns.kappa.inla <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla 
                                              
 ####                       
 fit.ns.kappa.TMB <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla = NULL, verbose = NULL){
+    if(is.null(ns[["fn"]]))stop("conjectured non-stationary function must be supplied")
+    if(is.null(ns[["parameters"]]))stop("TMB requires parameter starting values")
     fn <- ns[["fn"]]
     B.kappa <- cbind(0,0,1,fn)
     spde <- inla.spde2.matern(mesh = mesh,
@@ -225,22 +228,29 @@ fit.ns.kappa.TMB <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla =
     opt <- nlminb(obj$par,obj$fn,obj$gr)
     result <- sdreport(obj)
     result
-    result
 }
                                              
-                   
-
-
-
-
-
-
-
-
-
+####                       
+fit.UN.ns.kappa.TMB <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla = NULL, verbose = NULL){
+    if(is.null(ns[["parameters"]]))stop("TMB requires parameter starting values")
+    spde <- inla.spde2.matern(mesh = mesh,alpha = 2)
+    resp <- numeric(mesh$n)
+    resp.c <-as.vector(table(mesh$idx$loc))
+    resp[unique(mesh$idx$loc)]<- resp.c
+    meshidxloc <- 1:mesh$n
+    data <- list(resp = resp, meshidxloc=meshidxloc)
+    data$spde <- spde$param.inla[c("M0","M1","M2")]
+    data$area <- c(diag(data$spde$M0))
+    parameters <- ns[["parameters"]]
+    obj <- MakeADFun(data,parameters,random="x",DLL="nskappaspde")
+    opt <- nlminb(obj$par,obj$fn,obj$gr)
+    result <- sdreport(obj)
+    result
+}                   
 
 #############ns mean TMB
-fit.ns.mean.TMB <- function(mesh = NULL, locs = NULL, ns = NULL){
+fit.ns.mean.TMB <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla = NULL, verbose = NULL){
+    if(is.null(ns[["parameters"]]))stop("TMB requires parameter starting values")
     resp <- numeric(mesh$n)
     resp.c <-as.vector(table(mesh$idx$loc))
     resp[unique(mesh$idx$loc)]<- resp.c
@@ -253,5 +263,42 @@ fit.ns.mean.TMB <- function(mesh = NULL, locs = NULL, ns = NULL){
     obj <- MakeADFun(data,parameters,random="x",DLL="nonstatmean")
     opt <- nlminb(obj$par,obj$fn,obj$gr)
     result <- sdreport(obj)
+    result
+}
+
+
+############# lgcp using TMB
+fit.lgcp.TMB <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla = NULL, verbose = NULL){
+    if(is.null(ns[["parameters"]]))stop("TMB requires parameter starting values")
+    resp <- numeric(mesh$n)
+    resp.c <-as.vector(table(mesh$idx$loc))
+    resp[unique(mesh$idx$loc)]<- resp.c
+    meshidxloc <- 1:mesh$n
+    data <- list(resp = resp, meshidxloc=meshidxloc)
+    spde <- inla.spde2.matern(mesh = mesh,alpha = 2)
+    data$spde <- spde$param.inla[c("M0","M1","M2")]	# Encapsulation of 6 matrices
+    data$area <- c(diag(data$spde$M0))
+    parameters <- ns[["parameters"]]
+    obj <- MakeADFun(data,parameters,random="x",DLL="lgcpspde")
+    opt <- nlminb(obj$par,obj$fn,obj$gr)
+    result <- sdreport(obj)
+    result
+}
+
+
+
+#### non-standard, non-stationary lgcp
+fit.lgcp.ns <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla = NULL, verbose = NULL){
+    if(is.null(ns[["model"]]))stop("Please supply assumed model")
+    dll.dir <- paste(system.file(package = "lgcpSPDE"), "/tmb/bin/", sep = "")
+    for (i in paste(dll.dir, list.files(dll.dir), sep = "")){
+        dyn.load(i)
+    }
+    if(ns[["model"]] == "lgcpTMB") result <- fit.lgcp.TMB(mesh = mesh, locs = locs, ns = ns)
+    if(ns[["model"]] == "nsmeanTMB") result <- fit.ns.mean.TMB(mesh = mesh, locs = locs, ns = ns)
+    if(ns[["model"]] == "nskappaTMB") result <- fit.ns.kappa.TMB(mesh = mesh, locs = locs, ns = ns)
+    if(ns[["model"]] == "nsUNkappaTMB") result <- fit.UN.ns.kappa.TMB(mesh = mesh, locs = locs, ns = ns)
+    if(ns[["model"]] == "nskappaINLA") result <- fit.ns.kappa.inla(mesh = mesh, locs = locs, ns = ns,
+                                                                   control.inla = control.inla, verbose = verbose)
     result
 }

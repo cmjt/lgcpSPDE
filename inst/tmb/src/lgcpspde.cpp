@@ -23,6 +23,9 @@ Type objective_function<Type>::operator() ()
     Type lambda = exp(eta); // intensity 
     nll -= dpois(resp(i),lambda,true); 
   }
+
   ADREPORT(kappa);
+  Type sigma2 = 1/(4*M_PI*pow(kappa,2));   // sigma2 = 1/(4*pi*k^2) with tau =1
+  ADREPORT(sigma2);
   return nll;
 }
