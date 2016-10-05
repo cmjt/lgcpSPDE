@@ -257,9 +257,10 @@ fit.ns.mean.TMB <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla = 
     meshidxloc <- 1:mesh$n
     data <- list(resp = resp, meshidxloc=meshidxloc)
     spde <- inla.spde2.matern(mesh = mesh,alpha = 2)
-    data$spde <- spde$param.inla[c("M0","M1","M2")]	# Encapsulation of 6 matrices
+    data$spde <- spde$param.inla[c("M0","M1","M2")]	
     data$area <- c(diag(data$spde$M0))
-    parameters <- ns[["parameters"]]
+    data$dists <- as.matrix(dist(mesh$loc))
+    parameters <- ns[["parameters"]] ## requires beta0 (vector), log_kappa (numeric), rho (numeric), x(vector) 
     obj <- MakeADFun(data,parameters,random="x",DLL="nonstatmean")
     opt <- nlminb(obj$par,obj$fn,obj$gr)
     result <- sdreport(obj)
@@ -276,7 +277,7 @@ fit.lgcp.TMB <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla = NUL
     meshidxloc <- 1:mesh$n
     data <- list(resp = resp, meshidxloc=meshidxloc)
     spde <- inla.spde2.matern(mesh = mesh,alpha = 2)
-    data$spde <- spde$param.inla[c("M0","M1","M2")]	# Encapsulation of 6 matrices
+    data$spde <- spde$param.inla[c("M0","M1","M2")]
     data$area <- c(diag(data$spde$M0))
     parameters <- ns[["parameters"]]
     obj <- MakeADFun(data,parameters,random="x",DLL="lgcpspde")

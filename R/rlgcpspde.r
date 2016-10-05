@@ -8,7 +8,9 @@
 #' \code{cutoff} length at which to cut off triangle edge lengths,
 #' \code{min} triangle edge length inside region,
 #' and \code{max} triangle edge length inside region.
-#' @param mu numeric or a function of x,y, and z, the intercept term to simulate a LGCP, by default is 0.
+#' @param mu numeric or a named list, the intercept term to simulate a LGCP, by default is 0.
+#' if a named list must contain elements \code{mean}, \code{cov.model}, \code{cov.pars} the latter
+#'  two parameters of the grf function \link{geoR}. to simulate a non-stationary expectation
 #' @param kappa a numeric constant, parameter of the SPDE model.
 #' @param sigma2 a numeric constant, parameter of the SPDE model, by default this is 0.05.
 #' @param n a numeric constant defining the number of time points, by default 1.
@@ -26,7 +28,7 @@
 rlgcpspde<-function (spatial.polygon = NULL, mesh.pars = NULL, mu = 0, kappa = NULL, sigma2 = 0.05 , n = 1, rho = 0.9, mark = FALSE, beta = NULL, mark.function = function(x,y) cos(x) - sin(y), seed = 1, non.stat = NULL){
     mesh <- make.mesh(mesh.pars = mesh.pars, spatial.polygon = spatial.polygon)
     locs <- mesh$loc
-    if(class(mu)=="function"){mu <- mu(x = locs[,1], y = locs[,2], z = locs[,3])}
+    if(class(mu)=="list"){mu <- mu[["mean"]] +  grf(mesh$n,grid = locs,cov.model = mu[["cov.model"]],cov.pars=mu[["cov.pars"]],messages=FALSE)$data}
     if(!is.null(non.stat)){
         sample <- mu + rgeospde(locs = locs, mesh = mesh, seed = seed,
                                 non.stat = non.stat)}else{
