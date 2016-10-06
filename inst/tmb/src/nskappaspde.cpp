@@ -1,32 +1,27 @@
 #include <TMB.hpp>
+#include "/home/charlotte/Documents/Gitwork/lgcpSPDE/inst/tmb/src/nonstatUN.hpp"
 
 template<class Type>
 Type objective_function<Type>::operator() ()
 {
   using namespace R_inla;
   using namespace density; // this where the structure for GMRF is defined
-  using namespace Eigen;  // probably for sparseness clacs
+  using namespace Eigen;  // probably for sparseness cals
+  using namespace non_stat_UN; // this where the structure for GMRF is defined my own)
   DATA_VECTOR(resp);
   DATA_VECTOR(area);
   DATA_IVECTOR(meshidxloc);
-  DATA_STRUCT(spde,spde_t); // this as structure of spde object is defined in r-inla hence using that namespce
+  DATA_STRUCT(spde,spde_nonstat_UN_t); // this as structure defined by me
   PARAMETER(beta0); // intercept term
-  PARAMETER(log_kappa); // fixed kappa of random field
-  PARAMETER_VECTOR(ns_log_kappa);
-  PARAMETER(sigma_u); //variance on u (random effect on kappa)
-  vector<Type> u(resp.size()); //the random bit of ns_log_kappa
+  PARAMETER_VECTOR(log_u); //diagonal of D1 matrix
   PARAMETER_VECTOR(x); //the random field/effect
-  Type kappa = exp(log_kappa); // return the (fixed) kappa parameter of the Random field
-  Type sum_u = 0;
-  SparseMatrix<Type> Q = Q_spde(spde,kappa); // create the precision matrix from the spde model for the GMRF
+  vector<Type> kappa = exp(log_u);
+  SparseMatrix<Type> Q = Q_spde_nonstat_UN(spde,log_u); // create the precision matrix from the spde model for the GMRF
   Type nll = GMRF(Q)(x); // x the random effect is a GMRF with precision Q
   for(int i = 0; i <resp.size(); i++){
-    sum_u += u(i);
-    ns_log_kappa(i) = log_kappa + sum_u;
     Type eta = beta0 + log(area(i)) + x(i); 
     Type lambda = exp(eta); // intensity 
     nll -= dpois(resp(i),lambda,true); // contribution from observed data
-    nll -=dnorm(u(i),Type(0),sigma_u,true);
   }
   ADREPORT(kappa);
   return nll;
