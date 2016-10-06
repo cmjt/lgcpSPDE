@@ -224,7 +224,7 @@ fit.ns.kappa.TMB <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla =
     data$spde <- spde$param.inla[c("M0","M1","M2","B1","B2")]	# Encapsulation of 6 matrices
     data$area <- c(diag(data$spde$M0))
     parameters <- ns[["parameters"]]
-    obj <- MakeADFun(data,parameters,random="x",DLL="nonstat")
+    obj <- MakeADFun(data,parameters,random="x",DLL="nonstat",silent = verbose )
     opt <- nlminb(obj$par,obj$fn,obj$gr)
     result <- sdreport(obj)
     result
@@ -242,7 +242,7 @@ fit.UN.ns.kappa.TMB <- function(mesh = NULL, locs = NULL, ns = NULL, control.inl
     data$spde <- spde$param.inla[c("M0","M1","M2")]
     data$area <- c(diag(data$spde$M0))
     parameters <- ns[["parameters"]]
-    obj <- MakeADFun(data,parameters,random="x",DLL="nskappaspde")
+    obj <- MakeADFun(data,parameters,random="x",DLL="nskappaspde",silent = verbose )
     opt <- nlminb(obj$par,obj$fn,obj$gr)
     result <- sdreport(obj)
     result
@@ -261,7 +261,7 @@ fit.ns.mean.TMB <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla = 
     data$area <- c(diag(data$spde$M0))
     data$dists <- as.matrix(dist(mesh$loc))
     parameters <- ns[["parameters"]] ## requires beta0 (vector), log_kappa (numeric), rho (numeric), x(vector) 
-    obj <- MakeADFun(data,parameters,random="x",DLL="nonstatmean")
+    obj <- MakeADFun(data,parameters,random="x",DLL="nonstatmean",silent = verbose )
     opt <- nlminb(obj$par,obj$fn,obj$gr)
     result <- sdreport(obj)
     result
@@ -280,7 +280,7 @@ fit.lgcp.TMB <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla = NUL
     data$spde <- spde$param.inla[c("M0","M1","M2")]
     data$area <- c(diag(data$spde$M0))
     parameters <- ns[["parameters"]]
-    obj <- MakeADFun(data,parameters,random="x",DLL="lgcpspde")
+    obj <- MakeADFun(data,parameters,random="x",DLL="lgcpspde",silent = verbose )
     opt <- nlminb(obj$par,obj$fn,obj$gr)
     result <- sdreport(obj)
     result
@@ -295,10 +295,10 @@ fit.lgcp.ns <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla = NULL
     for (i in paste(dll.dir, list.files(dll.dir), sep = "")){
         dyn.load(i)
     }
-    if(ns[["model"]] == "lgcpTMB") result <- fit.lgcp.TMB(mesh = mesh, locs = locs, ns = ns)
-    if(ns[["model"]] == "nsmeanTMB") result <- fit.ns.mean.TMB(mesh = mesh, locs = locs, ns = ns)
-    if(ns[["model"]] == "nskappaTMB") result <- fit.ns.kappa.TMB(mesh = mesh, locs = locs, ns = ns)
-    if(ns[["model"]] == "nsUNkappaTMB") result <- fit.UN.ns.kappa.TMB(mesh = mesh, locs = locs, ns = ns)
+    if(ns[["model"]] == "lgcpTMB") result <- fit.lgcp.TMB(mesh = mesh, locs = locs, ns = ns, verbose = verbose)
+    if(ns[["model"]] == "nsmeanTMB") result <- fit.ns.mean.TMB(mesh = mesh, locs = locs, ns = ns, verbose = verbose)
+    if(ns[["model"]] == "nskappaTMB") result <- fit.ns.kappa.TMB(mesh = mesh, locs = locs, ns = ns, verbose = verbose)
+    if(ns[["model"]] == "nsUNkappaTMB") result <- fit.UN.ns.kappa.TMB(mesh = mesh, locs = locs, ns = ns, verbose = verbose)
     if(ns[["model"]] == "nskappaINLA") result <- fit.ns.kappa.inla(mesh = mesh, locs = locs, ns = ns,
                                                                    control.inla = control.inla, verbose = verbose)
     result
