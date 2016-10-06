@@ -295,10 +295,10 @@ fit.lgcp.ns <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla = NULL
     for (i in paste(dll.dir, list.files(dll.dir), sep = "")){
         dyn.load(i)
     }
-    if(ns[["model"]] == "lgcpTMB") result <- fit.lgcp.TMB(mesh = mesh, locs = locs, ns = ns, verbose = verbose)
-    if(ns[["model"]] == "nsmeanTMB") result <- fit.ns.mean.TMB(mesh = mesh, locs = locs, ns = ns, verbose = verbose)
-    if(ns[["model"]] == "nskappaTMB") result <- fit.ns.kappa.TMB(mesh = mesh, locs = locs, ns = ns, verbose = verbose)
-    if(ns[["model"]] == "nsUNkappaTMB") result <- fit.UN.ns.kappa.TMB(mesh = mesh, locs = locs, ns = ns, verbose = verbose)
+    if(ns[["model"]] == "lgcpTMB") result <- fit.lgcp.TMB(mesh = mesh, locs = locs, ns = ns, verbose = !verbose)
+    if(ns[["model"]] == "nsmeanTMB") result <- fit.ns.mean.TMB(mesh = mesh, locs = locs, ns = ns, verbose = !verbose)
+    if(ns[["model"]] == "nskappaTMB") result <- fit.ns.kappa.TMB(mesh = mesh, locs = locs, ns = ns, verbose = !verbose)
+    if(ns[["model"]] == "nsUNkappaTMB") result <- fit.UN.ns.kappa.TMB(mesh = mesh, locs = locs, ns = ns, verbose = !verbose)
     if(ns[["model"]] == "nskappaINLA") result <- fit.ns.kappa.inla(mesh = mesh, locs = locs, ns = ns,
                                                                    control.inla = control.inla, verbose = verbose)
     result
