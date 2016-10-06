@@ -233,13 +233,14 @@ fit.ns.kappa.TMB <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla =
 ####                       
 fit.UN.ns.kappa.TMB <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla = NULL, verbose = NULL){
     if(is.null(ns[["parameters"]]))stop("TMB requires parameter starting values")
-    spde <- inla.spde2.matern(mesh = mesh,alpha = 2)
+    spde <- inla.spde2.matern(mesh = mesh,alpha = 2,B.tau = cbind(0,1,0,0),
+                              B.kappa = cbind(0,0,1,1))
     resp <- numeric(mesh$n)
     resp.c <-as.vector(table(mesh$idx$loc))
     resp[unique(mesh$idx$loc)]<- resp.c
     meshidxloc <- 1:mesh$n
     data <- list(resp = resp, meshidxloc=meshidxloc)
-    data$spde <- spde$param.inla[c("M0","M1","M2")]
+    data$spde <- spde$param.inla[c("M0","M1","M2","B2")]
     data$area <- c(diag(data$spde$M0))
     parameters <- ns[["parameters"]]
     obj <- MakeADFun(data,parameters,random="x",DLL="nskappaspde",silent = verbose )
