@@ -13,12 +13,15 @@ Type objective_function<Type>::operator() ()
   DATA_MATRIX(dists); // Euclidean distance matrix of mesh nodes
   PARAMETER_VECTOR(beta0); // intercept term (spatially varying)
   PARAMETER(log_kappa); // kappa of random field
+  PARAMETER(log_sigma); //parameter of the exponential function
   PARAMETER(rho); // parameter of the exponential covariance
   PARAMETER_VECTOR(x); //the random field/effect
   Type kappa = exp(log_kappa); // return the kappa parameter of the Random field
+  Type sigma2 = exp(2.0*log_sigma); //return parameter of the exponential covariance for the expectation
   SparseMatrix<Type> Q = Q_spde(spde,kappa); // create the precision matrix from the spde model for the GMRF
   matrix<Type> cov(resp.size(),resp.size()); //covariance matrix for spatially varying mean
-  Type res=0; //initialise mtvnorm density
+  vector<Type> eta(resp.size()); //initialise intensity of Poisson
+  eta = exp(log_sigma)*beta0;
   for(int i=0;i<resp.size();i++){
     cov(i,i)=Type(1); //ones on the diagonal
     for(int j=0;j<i;j++){
@@ -27,13 +30,14 @@ Type objective_function<Type>::operator() ()
     }
   }
   MVNORM_t<Type> neg_log_density(cov); //define multivariate normal density with covariance cov  (exponential)
-  res +=neg_log_density(beta0); //already defined as the negative log density
   Type nll = GMRF(Q)(x); // x the random effect is a GMRF with precision Q
+  nll +=neg_log_density(beta0); //already defined as the negative log density
   for(int i = 0; i <resp.size(); i++){
-    Type eta = beta0(i) + log(area(i)) + x(i); 
-    Type lambda = exp(eta); // intensity 
+    Type log_lam = eta(i) + log(area(i)) + x(i); 
+    Type lambda = exp(log_lam); // intensity 
     nll -= dpois(resp(i),lambda,true); 
   }
   ADREPORT(kappa);
+  ADREPORT(sigma2);
   return nll;
 }
