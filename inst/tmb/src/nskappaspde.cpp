@@ -1,5 +1,5 @@
 #include <TMB.hpp>
-#include "/home/charlotte/Documents/Gitwork/lgcpSPDE/inst/tmb/src/nonstatUN.hpp"
+#include "nonstatUN.hpp"
 
 template<class Type>
 Type objective_function<Type>::operator() ()
