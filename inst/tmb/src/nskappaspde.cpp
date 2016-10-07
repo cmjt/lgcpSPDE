@@ -16,7 +16,7 @@ Type objective_function<Type>::operator() ()
   PARAMETER_VECTOR(log_u); //diagonal of D1 matrix
   PARAMETER_VECTOR(x); //the random field/effect
   vector<Type> kappa = exp(log_u);
-  SparseMatrix<Type> Q = Q_spde_nonstat_UN(spde,log_u); // create the precision matrix from the spde model for the GMRF
+  SparseMatrix<Type> Q = Q_spde_nonstat_UN(spde,kappa); // create the precision matrix from the spde model for the GMRF
   Type nll = GMRF(Q)(x); // x the random effect is a GMRF with precision Q
   for(int i = 0; i <resp.size(); i++){
     Type eta = beta0 + log(area(i)) + x(i); 
