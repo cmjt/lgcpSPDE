@@ -1,4 +1,5 @@
-// modified the functions written by Skaug)
+// structure of non-stationary precision of GRF with kappa = diag(D1) = 
+// exp(theta2 + thets3 (some user defined function of x and y)
 // 
 
 namespace non_stat {

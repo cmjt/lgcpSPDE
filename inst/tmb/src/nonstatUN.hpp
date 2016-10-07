@@ -1,5 +1,5 @@
 
-// modified the functions written by Skaug)
+// structure of the precision matrix of a non-stationary GRF with kappa=diag(Di) unknown
 // 
 
 namespace non_stat_UN {
