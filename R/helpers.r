@@ -218,6 +218,7 @@ fit.ns.kappa.TMB <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla =
                               B.kappa = B.kappa)
     resp <- numeric(mesh$n)
     resp.c <-as.vector(table(mesh$idx$loc))
+    if(length(resp.c)==0)stop("mesh needs to be constructed using point pattern locations")
     resp[unique(mesh$idx$loc)]<- resp.c
     meshidxloc <- 1:mesh$n
     data <- list(resp = resp, meshidxloc=meshidxloc)
@@ -237,6 +238,7 @@ fit.oscilate.TMB <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla =
                               alpha = 2)
     resp <- numeric(mesh$n)
     resp.c <-as.vector(table(mesh$idx$loc))
+    if(length(resp.c)==0)stop("mesh needs to be constructed using point pattern locations")
     resp[unique(mesh$idx$loc)]<- resp.c
     meshidxloc <- 1:mesh$n
     data <- list(resp = resp, meshidxloc=meshidxloc)
@@ -256,6 +258,7 @@ fit.UN.ns.kappa.TMB <- function(mesh = NULL, locs = NULL, ns = NULL, control.inl
                               B.kappa = cbind(0,0,1,1))
     resp <- numeric(mesh$n)
     resp.c <-as.vector(table(mesh$idx$loc))
+    if(length(resp.c)==0)stop("mesh needs to be constructed using point pattern locations")
     resp[unique(mesh$idx$loc)]<- resp.c
     meshidxloc <- 1:mesh$n
     data <- list(resp = resp, meshidxloc=meshidxloc)
@@ -273,6 +276,7 @@ fit.ns.mean.TMB <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla = 
     if(is.null(ns[["parameters"]]))stop("TMB requires parameter starting values")
     resp <- numeric(mesh$n)
     resp.c <-as.vector(table(mesh$idx$loc))
+    if(length(resp.c)==0)stop("mesh needs to be constructed using point pattern locations")
     resp[unique(mesh$idx$loc)]<- resp.c
     meshidxloc <- 1:mesh$n
     data <- list(resp = resp, meshidxloc=meshidxloc)
@@ -293,6 +297,7 @@ fit.lgcp.TMB <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla = NUL
     if(is.null(ns[["parameters"]]))stop("TMB requires parameter starting values")
     resp <- numeric(mesh$n)
     resp.c <-as.vector(table(mesh$idx$loc))
+    if(length(resp.c)==0)stop("mesh needs to be constructed using point pattern locations")
     resp[unique(mesh$idx$loc)]<- resp.c
     meshidxloc <- 1:mesh$n
     data <- list(resp = resp, meshidxloc=meshidxloc)
