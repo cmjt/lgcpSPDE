@@ -20,11 +20,11 @@ namespace oscilate {
   };
     
   template<class Type>
-  SparseMatrix<Type> Q_spde_oscilate(spde_oscilate_t<Type> spde, Type kappa, Type theta){
+  SparseMatrix<Type> Q_spde_oscilate(spde_oscilate_t<Type> spde, Type kappa, Type logit_theta){
     Type kappa_pow2 = kappa*kappa;
     Type kappa_pow4 = kappa_pow2*kappa_pow2;
-    Type inlogittheta = exp(theta)/(1+exp(theta));       
-    return kappa_pow4*spde.M0 + Type(2.0)*cos(M_PI*inlogittheta)*kappa_pow2*spde.M1 + spde.M2;  
+    Type theta = exp(logit_theta)/(1+exp(logit_theta));       
+    return kappa_pow4*spde.M0 + Type(2.0)*cos(M_PI*theta)*kappa_pow2*spde.M1 + spde.M2;  
   }
 } // end namespace oscilate
    
