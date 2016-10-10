@@ -16,16 +16,24 @@
 #' and \code{theta} a vctor of length 3 specifying the theta values of the non-stationary model
 #' @export
 rgeospde <- function( locs = NULL,mesh = NULL, kappa = NULL, sigma2 = 1,n = 1, rho = 0.9, seed = 1, non.stat = NULL){
-    if(!is.null(non.stat)){
+    if(!is.null(non.stat) & is.null(non.stat[["oscillate"]])){
         fn <- non.stat[["fn"]]
         theta <- non.stat[["theta"]]
         B.kappa <- cbind(0,0,1,fn)
         spde <- inla.spde2.matern(mesh = mesh,
                                  alpha = 2, B.tau = cbind(0,1,0,0),
-                                 B.kappa = B.kappa)}else{
-                                                       spde <- inla.spde2.matern(mesh = mesh, alpha=2)
-                                                       theta <- c(-0.5 * log(4 * pi * sigma2 * kappa^2), log(kappa))}
-    Q <- inla.spde2.precision(spde, theta) # PRECISION MATRIX
+                                 B.kappa = B.kappa)
+    }else{
+        spde <- inla.spde2.matern(mesh = mesh, alpha=2)
+        theta <- c(-0.5 * log(4 * pi * sigma2 * kappa^2), log(kappa))}
+    if(!is.null(non.stat[["oscillate"]])){
+        thetaOSC <- non.stat[["oscillate"]]
+        Q <- kappa^4 *spde$param.inla$M0 +
+                       2*kappa^2*cos(pi*thetaOSC)*spde$param.inla$M1 +
+                                   spde$param.inla$M2
+    }else{
+        Q <- inla.spde2.precision(spde, theta)
+    } # PRECISION MATRIX
     #projector matrix
     A <- inla.mesh.project(mesh = mesh,loc = locs)$A
     if (n == 1) {

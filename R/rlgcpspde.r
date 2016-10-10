@@ -28,13 +28,17 @@
 rlgcpspde<-function (spatial.polygon = NULL, mesh.pars = NULL, mu = 0, kappa = NULL, sigma2 = 0.05 , n = 1, rho = 0.9, mark = FALSE, beta = NULL, mark.function = function(x,y) cos(x) - sin(y), seed = 1, non.stat = NULL){
     mesh <- make.mesh(mesh.pars = mesh.pars, spatial.polygon = spatial.polygon)
     locs <- mesh$loc
-    if(class(mu)=="list"){mu <- mu[["mean"]] +  grf(mesh$n,grid = locs,cov.model = mu[["cov.model"]],cov.pars=mu[["cov.pars"]],messages=FALSE)$data}
+    if(class(mu)=="list"){mu <- mu[["mean"]] +
+                              grf(mesh$n,grid = locs,cov.model = mu[["cov.model"]],cov.pars=mu[["cov.pars"]],messages=FALSE)$data
+    }
     if(!is.null(non.stat)){
-        sample <- mu + rgeospde(locs = locs, mesh = mesh, seed = seed,
-                                non.stat = non.stat)}else{
-                                                        sample <- mu + rgeospde(locs = locs, mesh = mesh,
-                                                                                kappa = kappa, sigma2 = sigma2, n = n,
-                                                                                rho = rho, seed = seed)}
+        sample <- mu + rgeospde(locs = locs, mesh = mesh, seed = seed, kappa = kappa,
+                                non.stat = non.stat)
+    }else{
+        sample <- mu + rgeospde(locs = locs, mesh = mesh,
+                                kappa = kappa, sigma2 = sigma2, n = n,
+                                rho = rho, seed = seed)
+    }
     proj<-inla.mesh.projector(mesh = mesh)
     w <- as.owin(spatial.polygon)
     y0 <- x0 <- seq(w$xrange[1], w$xrange[2],length=length(proj$x))
@@ -66,25 +70,26 @@ rlgcpspde<-function (spatial.polygon = NULL, mesh.pars = NULL, mu = 0, kappa = N
                 mark.im[Reduce('cbind', nearest.pixel(loc[[i]][,1],loc[[i]][,2],im(mark.im, x0, y0)))]})
             mark <-  sapply(1:length(pp),function(i) mark[[i]] + beta*ppstruct[[i]])
             result <- sapply(1:length(pp), function(i) cbind(x = loc[[i]][,1],y = loc[[i]][,2], mark = mark[[i]]))
-            }}else{
-                 if(ncol(sample)==1){
-                     Lambda <- as.im(exp(matrix(inla.mesh.project(proj, sample),length(proj$x),length(proj$y))),W = w)
-                     set.seed(seed)
-                     pp <-rpoispp(Lambda)[w]
-                     loc <- cbind(pp$x,pp$y)
-                     result <- cbind(x = loc[,1],y = loc[,2])
-                 }else{
-                     logLambda <- lapply(1:ncol(sample), function(j) {
-                         r <- matrix(inla.mesh.project(proj, sample[,j]),length(proj$x),length(proj$y))
-                         return(r)})
+            }
+    }else{
+        if(ncol(sample)==1){
+            Lambda <- as.im(exp(matrix(inla.mesh.project(proj, sample),length(proj$x),length(proj$y))),W = w)
+            set.seed(seed)
+            pp <-rpoispp(Lambda)[w]
+            loc <- cbind(pp$x,pp$y)
+            result <- cbind(x = loc[,1],y = loc[,2])
+        }else{
+            logLambda <- lapply(1:ncol(sample), function(j) {
+                r <- matrix(inla.mesh.project(proj, sample[,j]),length(proj$x),length(proj$y))
+                return(r)})
                      pp <- lapply(1:ncol(sample), function(j) {
                          set.seed(seed)
                          r <-rpoispp(as.im(exp(logLambda[[j]]), W = w))[w]
                          return(r)})
-                     loc <- lapply(pp, function(x) cbind(x$x,x$y))
-                     result <- sapply(1:length(pp), function(i) cbind(x = loc[[i]][,1],y = loc[[i]][,2]))
-                 }
-            }
+            loc <- lapply(pp, function(x) cbind(x$x,x$y))
+            result <- sapply(1:length(pp), function(i) cbind(x = loc[[i]][,1],y = loc[[i]][,2]))
+        }
+    }
     return(result)
 }
 
