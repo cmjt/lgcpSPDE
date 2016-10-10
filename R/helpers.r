@@ -232,7 +232,7 @@ fit.ns.kappa.TMB <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla =
 }
 
 ####                       
-fit.oscilate.TMB <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla = NULL, verbose = NULL){
+fit.oscillate.TMB <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla = NULL, verbose = NULL){
     if(is.null(ns[["parameters"]]))stop("TMB requires parameter starting values")
     spde <- inla.spde2.matern(mesh = mesh,
                               alpha = 2)
@@ -324,7 +324,7 @@ fit.lgcp.ns <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla = NULL
     ##if(ns[["model"]] == "nsmeanTMB") result <- fit.ns.mean.TMB(mesh = mesh, locs = locs, ns = ns, verbose = !verbose)
     if(ns[["model"]] == "nskappaTMB") result <- fit.ns.kappa.TMB(mesh = mesh, locs = locs, ns = ns, verbose = !verbose)
     if(ns[["model"]] == "nsUNkappaTMB") result <- fit.UN.ns.kappa.TMB(mesh = mesh, locs = locs, ns = ns, verbose = !verbose)
-    if(ns[["model"]] == "oscilateTMB") result <- fit.oscilate.TMB(mesh = mesh, locs = locs, ns = ns, verbose = !verbose)
+    if(ns[["model"]] == "oscillateTMB") result <- fit.oscillate.TMB(mesh = mesh, locs = locs, ns = ns, verbose = !verbose)
     if(ns[["model"]] == "nskappaINLA") result <- fit.ns.kappa.inla(mesh = mesh, locs = locs, ns = ns,
                                                                    control.inla = control.inla, verbose = verbose)
     result
