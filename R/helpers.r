@@ -229,6 +229,25 @@ fit.ns.kappa.TMB <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla =
     result <- sdreport(obj)
     result
 }
+
+####                       
+fit.oscilate.TMB <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla = NULL, verbose = NULL){
+    if(is.null(ns[["parameters"]]))stop("TMB requires parameter starting values")
+    spde <- inla.spde2.matern(mesh = mesh,
+                              alpha = 2)
+    resp <- numeric(mesh$n)
+    resp.c <-as.vector(table(mesh$idx$loc))
+    resp[unique(mesh$idx$loc)]<- resp.c
+    meshidxloc <- 1:mesh$n
+    data <- list(resp = resp, meshidxloc=meshidxloc)
+    data$spde <- spde$param.inla[c("M0","M1","M2")]	# Encapsulation of 6 matrices
+    data$area <- c(diag(data$spde$M0))
+    parameters <- ns[["parameters"]]
+    obj <- MakeADFun(data,parameters,random="x",DLL="osns",silent = verbose )
+    opt <- nlminb(obj$par,obj$fn,obj$gr)
+    result <- sdreport(obj)
+    result
+}
                                              
 ####                       
 fit.UN.ns.kappa.TMB <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla = NULL, verbose = NULL){
@@ -297,9 +316,10 @@ fit.lgcp.ns <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla = NULL
         dyn.load(i)
     }
     if(ns[["model"]] == "lgcpTMB") result <- fit.lgcp.TMB(mesh = mesh, locs = locs, ns = ns, verbose = !verbose)
-    if(ns[["model"]] == "nsmeanTMB") result <- fit.ns.mean.TMB(mesh = mesh, locs = locs, ns = ns, verbose = !verbose)
+    ##if(ns[["model"]] == "nsmeanTMB") result <- fit.ns.mean.TMB(mesh = mesh, locs = locs, ns = ns, verbose = !verbose)
     if(ns[["model"]] == "nskappaTMB") result <- fit.ns.kappa.TMB(mesh = mesh, locs = locs, ns = ns, verbose = !verbose)
     if(ns[["model"]] == "nsUNkappaTMB") result <- fit.UN.ns.kappa.TMB(mesh = mesh, locs = locs, ns = ns, verbose = !verbose)
+    if(ns[["model"]] == "oscilateTMB") result <- fit.oscilate.TMB(mesh = mesh, locs = locs, ns = ns, verbose = !verbose)
     if(ns[["model"]] == "nskappaINLA") result <- fit.ns.kappa.inla(mesh = mesh, locs = locs, ns = ns,
                                                                    control.inla = control.inla, verbose = verbose)
     result
