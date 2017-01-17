@@ -90,6 +90,9 @@ rlgcpspde<-function (spatial.polygon = NULL, mesh.pars = NULL, mu = 0, kappa = N
             result <- sapply(1:length(pp), function(i) cbind(x = loc[[i]][,1],y = loc[[i]][,2]))
         }
     }
+    if(nrow(result)==0){
+        stop("no point locations simulated")
+    }
     return(result)
 }
 
