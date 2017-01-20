@@ -32,12 +32,12 @@ rlgcpspde<-function (spatial.polygon = NULL, mesh.pars = NULL, mu = 0, kappa = N
                               grf(mesh$n,grid = locs,cov.model = mu[["cov.model"]],cov.pars=mu[["cov.pars"]],messages=FALSE)$data
     }
     if(!is.null(non.stat)){
-        sample <- mu + rgeospde(locs = locs, mesh = mesh, seed = seed, kappa = kappa,
-                                non.stat = non.stat)
+        sample <- rgeospde(locs = locs, mesh = mesh, seed = seed, kappa = kappa,
+                           non.stat = non.stat)
     }else{
-        sample <- mu + rgeospde(locs = locs, mesh = mesh,
-                                kappa = kappa, sigma2 = sigma2, n = n,
-                                rho = rho, seed = seed)
+        sample <- rgeospde(locs = locs, mesh = mesh,
+                           kappa = kappa, sigma2 = sigma2, n = n,
+                           rho = rho, seed = seed)
     }
     proj<-inla.mesh.projector(mesh = mesh)
     w <- as.owin(spatial.polygon)
@@ -49,7 +49,7 @@ rlgcpspde<-function (spatial.polygon = NULL, mesh.pars = NULL, mu = 0, kappa = N
             logLambda <- matrix(inla.mesh.project(proj, sample),length(proj$x),length(proj$y)) 
             jointLL <- logLambda + beta*mark.im
             set.seed(seed)
-            pp <-rpoispp(as.im(exp(jointLL), W = w))[w]
+            pp <-rpoispp(as.im(mu + exp(jointLL), W = w))[w]
             loc <- cbind(pp$x,pp$y)
             mark <- mark.im[Reduce('cbind', nearest.pixel(loc[,1],loc[,2],im(mark.im, x0, y0)))]
             ppstruct <- logLambda[Reduce('cbind', nearest.pixel(loc[,1],loc[,2],im(logLambda, x0, y0)))]
@@ -61,7 +61,7 @@ rlgcpspde<-function (spatial.polygon = NULL, mesh.pars = NULL, mu = 0, kappa = N
                 return(r)})
             pp <- lapply(1:ncol(sample), function(j) {
                 set.seed(seed)
-                r <-rpoispp(as.im(exp(logLambda[[j]]), W = w))[w]
+                r <-rpoispp(as.im(mu + exp(logLambda[[j]]), W = w))[w]
                 return(r)})
             loc <- lapply(pp, function(x) cbind(x$x,x$y))
             ppstruct <- sapply(1:length(pp), function(i) {
@@ -73,7 +73,7 @@ rlgcpspde<-function (spatial.polygon = NULL, mesh.pars = NULL, mu = 0, kappa = N
             }
     }else{
         if(ncol(sample)==1){
-            Lambda <- as.im(exp(matrix(inla.mesh.project(proj, sample),length(proj$x),length(proj$y))),W = w)
+            Lambda <- as.im(mu + exp(matrix(inla.mesh.project(proj, sample),length(proj$x),length(proj$y))),W = w)
             set.seed(seed)
             pp <-rpoispp(Lambda)[w]
             loc <- cbind(pp$x,pp$y)
@@ -84,7 +84,7 @@ rlgcpspde<-function (spatial.polygon = NULL, mesh.pars = NULL, mu = 0, kappa = N
                 return(r)})
                      pp <- lapply(1:ncol(sample), function(j) {
                          set.seed(seed)
-                         r <-rpoispp(as.im(exp(logLambda[[j]]), W = w))[w]
+                         r <-rpoispp(as.im(mu + exp(logLambda[[j]]), W = w))[w]
                          return(r)})
             loc <- lapply(pp, function(x) cbind(x$x,x$y))
             result <- sapply(1:length(pp), function(i) cbind(x = loc[[i]][,1],y = loc[[i]][,2]))

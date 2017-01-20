@@ -15,6 +15,7 @@
 #' @param covariates a named data.frame of covariates 
 #' @param prior.rho prior for the temporal correlation coefficient, by default a \code{pcprior} is used with \code{param=c(0-0.9)}. 
 #' @param verbose Logical if \code{TRUE} model fit is output to screen.
+#' @importMethodsFrom Matrix diag
 
 #' @export
 
