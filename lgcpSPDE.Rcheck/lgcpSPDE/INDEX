@@ -1,0 +1,22 @@
+compile.lgcpSPDE        Compiling TMB C++ templates
+find.fields             Function that extracts the "random fields" of
+                        the model fitted.
+fit.lgcp                Function to fit a spatio-temporal log-Gaussian
+                        Cox process model with an intercept and
+                        covariates (optional)
+fit.marked.lgcp         Fitting a marked point process model
+geo.fit                 Function to fit a spatial geo-statistical
+                        "prediction' model
+geo.joint.fit           Function to fit a joint spatio-temporal model
+                        to geo-statistical data where one spatio-
+                        temporal component is shared between the
+                        responses
+geo.st.fit              Function to fit a spatio-temporal model to
+                        geo-statistical data with an intercept and
+                        covariates
+make.mesh               Wrapper function to create a mesh object as
+                        used in an INLA model fit
+rgeospde                Function to simulate from a spatial/spatio
+                        temporal SPDE model
+rlgcpspde               Function to simulate from a spatial/spatio
+                        temporal LGCP (SPDE model)

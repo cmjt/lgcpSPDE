@@ -1,0 +1,167 @@
+* using log directory ‘/home/charlotte/Git/lgcpSPDE/lgcpSPDE.Rcheck’
+* using R version 3.3.2 (2016-10-31)
+* using platform: x86_64-pc-linux-gnu (64-bit)
+* using session charset: UTF-8
+* checking for file ‘lgcpSPDE/DESCRIPTION’ ... OK
+* checking extension type ... Package
+* this is package ‘lgcpSPDE’ version ‘0.0.1’
+* checking package namespace information ... OK
+* checking package dependencies ... NOTE
+Depends: includes the non-default packages:
+  ‘INLA’ ‘spatstat’ ‘maptools’ ‘fields’ ‘TMB’ ‘Rcpp’
+Adding so many packages to the search path is excessive and importing
+selectively is preferable.
+* checking if this is a source package ... NOTE
+Found the following apparent object files/libraries:
+  inst/tmb/bin/lgcpspde.so inst/tmb/bin/mvn.so inst/tmb/bin/nonstat.so
+  inst/tmb/bin/nonstatmean.so inst/tmb/bin/nskappaspde.so
+  inst/tmb/bin/osns.so
+Object files/libraries should not be included in a source package.
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking whether package ‘lgcpSPDE’ can be installed ... OK
+* checking installed package size ... NOTE
+  installed size is 125.5Mb
+  sub-directories of 1Mb or more:
+    tmb  124.6Mb
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... NOTE
+'LinkingTo' field is unused: package has no 'src' directory
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking dependencies in R code ... NOTE
+Packages in Depends field not imported from:
+  ‘Rcpp’ ‘TMB’ ‘fields’ ‘maptools’
+  These packages need to be imported from (in the NAMESPACE file)
+  for when this namespace is loaded but not attached.
+There are ::: calls to the package's namespace in its code. A package
+  almost never needs to use ::: for its own objects:
+  ‘make.covs’
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+fit.lgcp: warning in make.mesh(loc = locs, mesh.pars = mesh.pars):
+  partial argument match of 'loc' to 'locs'
+compile.lgcpSPDE: no visible global function definition for ‘compile’
+fit.UN.ns.kappa.TMB: no visible global function definition for
+  ‘MakeADFun’
+fit.UN.ns.kappa.TMB: no visible global function definition for ‘nlminb’
+fit.UN.ns.kappa.TMB: no visible global function definition for
+  ‘sdreport’
+fit.lgcp: no visible global function definition for ‘Diagonal’
+fit.lgcp: no visible global function definition for ‘rBind’
+fit.lgcp: no visible global function definition for ‘as.formula’
+fit.lgcp.TMB: no visible global function definition for ‘MakeADFun’
+fit.lgcp.TMB: no visible global function definition for ‘nlminb’
+fit.lgcp.TMB: no visible global function definition for ‘sdreport’
+fit.marked.lgcp: no visible global function definition for ‘Diagonal’
+fit.marked.lgcp: no visible global function definition for ‘rBind’
+fit.marked.lgcp: missing arguments not allowed in calls to ‘list’
+fit.marked.lgcp: no visible binding for global variable ‘cov.effects’
+fit.ns.kappa.TMB: no visible global function definition for ‘MakeADFun’
+fit.ns.kappa.TMB: no visible global function definition for ‘nlminb’
+fit.ns.kappa.TMB: no visible global function definition for ‘sdreport’
+fit.ns.kappa.inla: no visible global function definition for ‘rBind’
+fit.ns.kappa.inla: no visible global function definition for ‘Diagonal’
+fit.ns.kappa.inla: no visible global function definition for
+  ‘as.formula’
+fit.ns.mean.TMB: no visible global function definition for ‘dist’
+fit.ns.mean.TMB: no visible global function definition for ‘MakeADFun’
+fit.ns.mean.TMB: no visible global function definition for ‘nlminb’
+fit.ns.mean.TMB: no visible global function definition for ‘sdreport’
+fit.oscillate.TMB: no visible global function definition for
+  ‘MakeADFun’
+fit.oscillate.TMB: no visible global function definition for ‘nlminb’
+fit.oscillate.TMB: no visible global function definition for ‘sdreport’
+fit.two.marks.lgcp: no visible global function definition for
+  ‘Diagonal’
+fit.two.marks.lgcp: no visible global function definition for ‘rBind’
+fit.two.marks.lgcp: no visible binding for global variable
+  ‘cov.effects’
+fit.two.marks.lgcp: no visible global function definition for
+  ‘as.formula’
+geo.joint.fit: no visible global function definition for ‘as.formula’
+geo.st.fit: no visible global function definition for ‘as.formula’
+owls.pp.fit: no visible global function definition for ‘rBind’
+owls.pp.fit: no visible global function definition for ‘Diagonal’
+plot.fields: no visible global function definition for ‘grey.colors’
+plot.fields: no visible global function definition for ‘par’
+plot.fields: no visible global function definition for ‘image.plot’
+plot.fields: no visible global function definition for ‘contour’
+plot.mesh: no visible global function definition for ‘plot’
+plot.mesh: no visible global function definition for ‘lines’
+rlgcpspde: no visible global function definition for ‘grf’
+Undefined global functions or variables:
+  Diagonal MakeADFun as.formula compile contour cov.effects dist
+  grey.colors grf image.plot lines nlminb par plot rBind sdreport
+Consider adding
+  importFrom("grDevices", "grey.colors")
+  importFrom("graphics", "contour", "lines", "par", "plot")
+  importFrom("stats", "as.formula", "dist", "nlminb")
+to your NAMESPACE file.
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd cross-references ... WARNING
+Missing link or links in documentation object 'find.fields.Rd':
+  ‘mark.pp.fit’
+
+Missing link or links in documentation object 'fit.marked.lgcp.Rd':
+  ‘locs’
+
+Missing link or links in documentation object 'rlgcpspde.Rd':
+  ‘geoR’
+
+See section 'Cross-references' in the 'Writing R Extensions' manual.
+
+* checking for missing documentation entries ... WARNING
+Undocumented code objects:
+  ‘lgcp2D’ ‘studyarea’ ‘terrorism’
+Undocumented data sets:
+  ‘lgcp2D’ ‘terrorism’ ‘studyarea’
+All user-level objects in a package should have documentation entries.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... WARNING
+Undocumented arguments in documentation object 'fit.lgcp'
+  ‘control.inla’ ‘return.attributes’ ‘ns’
+Documented arguments not in \usage in documentation object 'fit.lgcp':
+  ‘response’
+
+Undocumented arguments in documentation object 'fit.marked.lgcp'
+  ‘covariates’ ‘prior.rho’ ‘hyper’
+
+Undocumented arguments in documentation object 'geo.joint.fit'
+  ‘locs.1’ ‘locs.2’ ‘response.1’ ‘response.2’ ‘t.index’ ‘hyper’
+  ‘control.inla’
+Documented arguments not in \usage in documentation object 'geo.joint.fit':
+  ‘temp’
+
+Functions with \usage entries need to have the appropriate \alias
+entries, and all their arguments documented.
+The \usage entries must correspond to syntactically valid R code.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking contents of ‘data’ directory ... OK
+* checking data for non-ASCII characters ... OK
+* checking data for ASCII and uncompressed saves ... OK
+* checking examples ... NONE
+* checking PDF version of manual ... OK
+* DONE
+Status: 3 WARNINGs, 6 NOTEs
