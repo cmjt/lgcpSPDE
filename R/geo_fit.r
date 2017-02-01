@@ -288,7 +288,7 @@ geo.spatial.temporal.fit <- function(mesh, locs, response, covariates, temp,  fa
                               effects=list(field = field.p), tag='prediction')
         stack<-inla.stack(stk.obvs,stk.prd)
         formula <- y ~ 0 + b0  +  f(random, model = u.mod) +
-            f(field,model = spde, group = field.group, control.group = control.time)y
+            f(field,model = spde, group = field.group, control.group = control.time)
     }
     if(!is.null(covariates)&!is.null(non.linear)&!is.null(prediction)){
         locs.p <- prediction[["pred.locs"]]
