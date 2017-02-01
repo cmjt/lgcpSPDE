@@ -194,7 +194,7 @@ geo.spatial.fit <- function(mesh, locs, response, covariates, family, control.in
 
 #' spatio temporal model fitting
 #'
-geo.spatial.temporalfit <- function(mesh, locs, response,temp, covariates, temp,  family,
+geo.spatial.temporal.fit <- function(mesh, locs, response, covariates, temp,  family,
                                     control.time, control.inla, control.compute,
                                     non.linear, prediction, verbose ){
     nv <- mesh$n
