@@ -180,7 +180,7 @@ geo.spatial.fit <- function(mesh, locs, response, covariates, family, control.in
     }
     result <- inla(as.formula(formula), family = family,
                    data = inla.stack.data(stack),
-                   A=inla.stack.A(stack),
+                   control.predictor=list(A=inla.stack.A(stack)),
                    control.inla = control.inla,
                    control.compute = control.compute,
                    verbose = verbose)
@@ -312,7 +312,7 @@ geo.spatial.temporal.fit <- function(mesh, locs, response, covariates, temp,  fa
     }
     result <- inla(as.formula(formula), family = family,
                    data = inla.stack.data(stack),
-                   A=inla.stack.A(stack),
+                   control.predictor=list(A=inla.stack.A(stack)),
                    control.inla = control.inla,
                    control.compute = control.compute,
                    verbose = verbose)
