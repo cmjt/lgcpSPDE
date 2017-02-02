@@ -43,8 +43,8 @@ geo.fit <- function(mesh = NULL,  locs = NULL, response = NULL, temp = NULL,cova
                     control.compute = list(dic = TRUE, waic = TRUE,cpo = TRUE, config = TRUE),
                     non.linear = NULL, prediction = NULL, verbose = FALSE){
     if(is.null(temp)&is.null(covariates)){
-        fit <- geo.spatial.fit(mesh = mesh, locs = locs, response = response, family = family,
-                               control.inla = control.inla, control.compute = control.compute,
+        fit <- geo.spatial.fit(mesh = mesh, locs = locs, response = response,covariates = NULL,
+                               family = family, control.inla = control.inla, control.compute = control.compute,
                                non.linear = non.linear, prediction = prediction, verbose = verbose)
     }
     if(is.null(temp)&!is.null(covariates)){
@@ -53,7 +53,8 @@ geo.fit <- function(mesh = NULL,  locs = NULL, response = NULL, temp = NULL,cova
                                non.linear = non.linear, prediction = prediction, verbose = verbose)
     }
     if(!is.null(temp)&is.null(covariates)){
-        fit <- geo.spatial.temporal.fit(mesh = mesh, locs = locs, response = response, temp = temp, family = family,
+        fit <- geo.spatial.temporal.fit(mesh = mesh, locs = locs, response = response, temp = temp,
+                                        family = family, covariates = NULL,
                                         control.time = control.time, control.inla = control.inla,
                                         control.compute = control.compute,
                                         non.linear = non.linear, prediction = prediction, verbose = verbose)
