@@ -60,58 +60,16 @@ geo.joint.fit <- function(mesh = NULL,  locs = NULL, response = NULL, temp = NUL
     return(fit)
 }
 
-
-
-
-
-    
-geo.spatial.j.temporal.fit <-function(mesh, locs, temp,...){
+#' spatial only fitting
+#' 
+geo.spatial.j.fit <- function(mesh, locs, response, covariates, family, control.time, control.inla,
+                              control.compute, non.linear, prediction, verbose){
     spde <-inla.spde2.matern(mesh = mesh, alpha = 2)
     nv <- mesh$n
-    if(!is.null(t.index)){
-        temp <- t.index # temporal dimension
-        k <- (mesh.t <- inla.mesh.1d(temp))$n # number of groups
-        ## create projection matrix for loacations
-        Ast.1 <- inla.spde.make.A(mesh = mesh, loc = locs.1, group = temp, n.group = k)
-        Ast.2 <- inla.spde.make.A(mesh = mesh, loc = locs.2, group = temp, n.group = k)
-        field.1 <- inla.spde.make.index('field.1', n.spde = spde$n.spde, group = temp, n.group = k)
-        field.2 <- inla.spde.make.index('field.2', n.spde = spde$n.spde, group = temp, n.group = k)
-        copy.field <- inla.spde.make.index('copy.field', n.spde = spde$n.spde, group = temp, n.group = k)
-        # temporal model "ar1"
-        ctr.g <- list(model='ar1',param = prior.rho)
-        if(!is.null(covariates)){
-            m <- lgcpSPDE:::make.covs(covariates)
-            cov.effetcs <- m[[1]]
-            cov.form <- m[[2]]
-            #create data stacks
-            stk.pp <- inla.stack(data=list(y=cbind(response.1,NA)),
-                                 A=list(Ast.1,1,1),
-                                 effects=list(field.1 = field.1, beta0 = rep(1,nrow(locs.1)), cov.effets = cov.effects))
-            x = "\"field.1\""
-            formula = paste("y", "~  0 + beta0 + alpha0 +", cov.form,
-                    " + f(field.1, model=spde, group = field.1.group, control.group=ctr.g)",
-                    "+ f(field.2, model=spde, group = field.2.group , control.group=ctr.g)",
-                    "+ f(copy.field, copy =", x, ",fixed=FALSE )")
-            }else{
-                 stk.pp <- inla.stack(data=list(y=cbind(response.1,NA)),
-                                 A=list(Ast.1,1),
-                                 effects=list(field.1 = field.1, beta0 = rep(1,nrow(locs.1))))
-                  formula <- y ~ 0 + beta0 + alpha0 + f(field.1, model=spde, group = field.1.group, control.group=ctr.g) +
-                      f(field.2, model=spde, group = field.2.group , control.group=ctr.g) +
-                      f(copy.field, copy = "field.1", fixed=FALSE, hyper = hyper )
-                 }
-        stk.mark <- inla.stack(data=list(y=cbind(NA,response.2)),
-                               A=list(Ast.2, Ast.2,1),
-                               effects=list(field.2 = field.2, copy.field = copy.field, alpha0 = rep(1,nrow(locs.2))))
-        ## combine data stacks
-        stack <- inla.stack(stk.pp,stk.mark)
-    }else{
-       
-        ## create projection matrix for loacations
-        Ast1 <- inla.spde.make.A(mesh = mesh, loc = locs.1)
-        Ast2 <- inla.spde.make.A(mesh = mesh, loc = locs.2)
-        field.1 <- field.2 <-  copy.field <-1:nv
-        if(!is.null(covariates)){
+    Ast1 <- inla.spde.make.A(mesh = mesh, loc = locs.1)
+    Ast2 <- inla.spde.make.A(mesh = mesh, loc = locs.2)
+    field.1 <- field.2 <-  copy.field <-1:nv
+    if(!is.null(covariates)){
             m <- make.covs(covariates)
             cov.effects <- m[[1]]
             cov.form <- m[[2]]
@@ -124,27 +82,79 @@ geo.spatial.j.temporal.fit <-function(mesh, locs, temp,...){
                     " + f(field.1, model=spde)",
                     "+ f(field.2, model=spde)",
                     "+ f(copy.field, copy =", x, ",fixed=FALSE )")
-            }else{
+    }else{
                  stk.pp <- inla.stack(data=list(y=cbind(response.1,NA)),
-                                 A=list( Ast1,1),
-                                 effects=list(field.1 = field.1, beta0 = rep(1,nrow(locs.1))))
-                  formula <- y ~ 0 + beta0 + alpha0 + f(field.1, model=spde) +
+                                      A=list( Ast1,1),
+                                      effects=list(field.1 = field.1, beta0 = rep(1,nrow(locs.1))))
+                 formula <- y ~ 0 + beta0 + alpha0 + f(field.1, model=spde) +
                       f(field.2, model=spde) +
-                      f(copy.field, copy = "field.1", fixed=FALSE, hyper = hyper )
-                 }
-        stk.mark <- inla.stack(data=list(y=cbind(NA,response.2)),
+                     f(copy.field, copy = "field.1", fixed=FALSE, hyper = hyper )
+    }
+    stk.mark <- inla.stack(data=list(y=cbind(NA,response.2)),
                                A=list(Ast2, Ast2,1),
-                               effects=list(field.2 = field.2, copy.field = copy.field, alpha0 = rep(1,nrow(locs.2))))
-        ## combine data stacks
-        stack <- inla.stack(stk.pp,stk.mark)
-        }
-    ##call to inla
+                           effects=list(field.2 = field.2, copy.field = copy.field, alpha0 = rep(1,nrow(locs.2))))
+    ## combine data stacks
+    stack <- inla.stack(stk.pp,stk.mark)
     result <- inla(as.formula(formula), family = family,
-            data=inla.stack.data(stack),
-            control.predictor=list(A=inla.stack.A(stack)),
-            control.inla = control.inla,
-            verbose = verbose,control.compute=list(dic=TRUE))
-    result
+                   data = inla.stack.data(stack),
+                   control.predictor=list(A=inla.stack.A(stack)),
+                   control.inla = control.inla,
+                   control.compute = control.compute,
+                   verbose = verbose)
+    return(result)
+
+}
+
+
+#' spatio-temporal model fitting 
+geo.spatial.j.temporal.fit <-function(mesh, locs, response, covariates, temp, family, control.time, control.inla,
+                              control.compute, non.linear, prediction, verbose){
+    spde <-inla.spde2.matern(mesh = mesh, alpha = 2)
+    nv <- mesh$n
+    temp <- t.index # temporal dimension
+    k <- (mesh.t <- inla.mesh.1d(temp))$n # number of groups
+    ## create projection matrix for loacations
+        Ast.1 <- inla.spde.make.A(mesh = mesh, loc = locs.1, group = temp, n.group = k)
+    Ast.2 <- inla.spde.make.A(mesh = mesh, loc = locs.2, group = temp, n.group = k)
+    field.1 <- inla.spde.make.index('field.1', n.spde = spde$n.spde, group = temp, n.group = k)
+    field.2 <- inla.spde.make.index('field.2', n.spde = spde$n.spde, group = temp, n.group = k)
+    copy.field <- inla.spde.make.index('copy.field', n.spde = spde$n.spde, group = temp, n.group = k)
+                                        # temporal model "ar1"
+    ctr.g <- list(model='ar1',param = prior.rho)
+    if(!is.null(covariates)){
+            m <- lgcpSPDE:::make.covs(covariates)
+            cov.effetcs <- m[[1]]
+            cov.form <- m[[2]]
+                                        #create data stacks
+            stk.pp <- inla.stack(data=list(y=cbind(response.1,NA)),
+                                 A=list(Ast.1,1,1),
+                                 effects=list(field.1 = field.1, beta0 = rep(1,nrow(locs.1)), cov.effets = cov.effects))
+            x = "\"field.1\""
+            formula = paste("y", "~  0 + beta0 + alpha0 +", cov.form,
+                    " + f(field.1, model=spde, group = field.1.group, control.group=ctr.g)",
+                    "+ f(field.2, model=spde, group = field.2.group , control.group=ctr.g)",
+                    "+ f(copy.field, copy =", x, ",fixed=FALSE )")
+    }else{
+        stk.pp <- inla.stack(data=list(y=cbind(response.1,NA)),
+                             A=list(Ast.1,1),
+                             effects=list(field.1 = field.1, beta0 = rep(1,nrow(locs.1))))
+        formula <- y ~ 0 + beta0 + alpha0 + f(field.1, model=spde, group = field.1.group, control.group=ctr.g) +
+            f(field.2, model=spde, group = field.2.group , control.group=ctr.g) +
+                      f(copy.field, copy = "field.1", fixed=FALSE, hyper = hyper )
+    }
+    stk.mark <- inla.stack(data=list(y=cbind(NA,response.2)),
+                           A=list(Ast.2, Ast.2,1),
+                           effects=list(field.2 = field.2, copy.field = copy.field, alpha0 = rep(1,nrow(locs.2))))
+    ## combine data stacks
+    stack <- inla.stack(stk.pp,stk.mark)
+    
+    result <- inla(as.formula(formula), family = family,
+                   data = inla.stack.data(stack),
+                   control.predictor=list(A=inla.stack.A(stack)),
+                   control.inla = control.inla,
+                   control.compute = control.compute,
+                   verbose = verbose)
+    return(result)
 }
                                       
     
