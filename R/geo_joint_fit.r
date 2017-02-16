@@ -1,24 +1,72 @@
-#' Function to fit a joint spatio-temporal model to geo-statistical data where one spatio-
-#' temporal component is shared between the responses
+#' Function to fit a  either a spatial or spatio-temporal joint model to geo-statistical data with an intercept and covariates for each likelihood
 #'
 #' @return A \code{inla} result object
 #'
 #' @param mesh a ``mesh'' object i.e. delauney triangulation of the domain, an
 #' object returned by \link{make.mesh}.
-#' @param locs a matrix of observation locations, where each row corresponds to the observation. 
-#' @param response a matrix of response variables, each row corresponds to the spatial locations
-#' in \code{locs}, the first column is the first response as a result of a
-#' spatio-temporal process we want to ``copy'' into the second column response.
-#' @param temp a numeric vector specifying a temporal index for each observation (starting at 1.....T)
-#' @param family a character vector specifying the assumed likelihoods of the response, by default is c("gaussian,"gaussian").
-#' @param prior.rho prior for the temporal correlation coefficient, by default a \code{pcprior} is used with \code{param=c(0-0.9)}.
-#' @param covariates a named data.frame of covariates
+#' @param locs a list of matrcies. The first element holds observation locations for the first likelihood, where each row corresponds to an observation. The second elemenr holds the observation locations for the second likelihood, each row corresponds to an observation. If no second element is supplied the observation locations for the first likelihood are used.
+#' @param response a list (length two) of vectors of each response variable, each corresponds to the respective spatial locations
+#' in \code{locs}.
+#' @param temp (optional) a numeric vector specifying a temporal index for each observation (starting at 1.....T). It is assumed that the temporal indecies are common accross each reponse.
+#' @param covariates (optional) a list (length 2) each element should contain a named data.frame of covariates. The first corresponding to the first likelihood, the second corresponding the the second likelihood.
+#' @param family a character vector of length two specifying the assumed likelihood of each response, by default is c("gaussian","gaussian").
+#' @param control.time (optional) supplied if the \code{temp} argumet is given to fit a spatio-temporal model. This argument
+#' controls the model and prior put on the hyperparameters of the model for the temporal component of the spatio-temporal
+#' model. By default this is \code{list(model = 'ar1', param = list(theta = list(prior='pccor1', param = c(0, 0.9))))}
+#' which is a pc.prior put on the rho coefficient of a AR(1) model with P(rho>0)=0.9. Assumed to be shared accross both responses
+#' Refer to Simpson, martins, and rue for further details *****put in proper refs*****
+#' @param control.inla a list which controls the fitting procedures INLA uses see Rue et al. ***ref book***
+#' by default this is \code{list(strategy='gaussian',int.strategy = 'eb')} for quick and dirty fitting.
+#' @param control.compute a list of fit statistics the user wants INLA to return. By default this
+#' is \code{list(dic = TRUE, waic = TRUE,cpo = TRUE, config = TRUE)}.
+#' @param non.linear (optional) should be used if the user requires a non-linear covariate to be included in the model
+#' Must be supplied as a named list with elements \code{random.effect} a numeric vector of the random effect indecies,
+#' and \code{model} the random effect model the user wishes to use for \code{random.effect}
+#' @param prediction (optional) should be used if the uses wnts to run a prediction model. Must be supplied as a
+#' named list with \code{pred.locs} the locations where predictionas are to be made (referring to the first likelihood ONLY).
+#' If a spatio-tempral model is to be fitted \code{pred.temp} the temporal indecies for the predictions (the same length as \code{pred.locs}).
 #' @param verbose Logical if \code{TRUE} model fit is output to screen.
-#'
+#' 
 #' @export
-geo.joint.fit <- function(mesh = NULL, locs.1 = NULL, locs.2 = NULL, response.1 = NULL, response.2 = NULL, t.index = NULL,  covariates = NULL, family = c("gaussian","gaussian"), verbose = FALSE, prior.rho = list(theta = list(prior='pccor1', param = c(0, 0.9))),hyper = list(theta=list(prior='normal', param=c(0,10))), control.inla=list(strategy='gaussian',int.strategy = 'eb')){
+
+geo.joint.fit <- function(mesh = NULL,  locs = NULL, response = NULL, temp = NULL,covariates = NULL, family = "gaussian",
+                    control.time = list(model = 'ar1', param = list(theta = list(prior='pccor1', param = c(0, 0.9)))),
+                    control.inla = list(strategy='gaussian',int.strategy = 'eb'),
+                    control.compute = list(dic = TRUE, waic = TRUE,cpo = TRUE, config = TRUE),
+                    non.linear = NULL, prediction = NULL, verbose = FALSE){
+     if(is.null(temp)&is.null(covariates)){
+        fit <- geo.spatial.j.fit(mesh = mesh, locs = locs, response = response,covariates = NULL,
+                               family = family, control.inla = control.inla, control.compute = control.compute,
+                               non.linear = non.linear, prediction = prediction, verbose = verbose)
+    }
+    if(is.null(temp)&!is.null(covariates)){
+        fit <- geo.spatial.j.fit(mesh = mesh, locs = locs, response = response,covariates = covariates,
+                               family = family, control.inla = control.inla, control.compute = control.compute,
+                               non.linear = non.linear, prediction = prediction, verbose = verbose)
+    }
+    if(!is.null(temp)&is.null(covariates)){
+        fit <- geo.spatial.j.temporal.fit(mesh = mesh, locs = locs, response = response, temp = temp,
+                                        family = family, covariates = NULL,
+                                        control.time = control.time, control.inla = control.inla,
+                                        control.compute = control.compute,
+                                        non.linear = non.linear, prediction = prediction, verbose = verbose)
+    }
+    if(!is.null(temp)&!is.null(covariates)){
+        fit <- geo.spatial.j.temporal.fit(mesh = mesh, locs = locs, response = response,covariates = covariates,
+                                        temp = temp, family = family, control.time = control.time,
+                                        control.inla = control.inla, control.compute = control.compute,
+                                        non.linear = non.linear, prediction = prediction, verbose = verbose)
+    }
+    return(fit)
+}
+
+
+
+
+
+    
+geo.spatial.j.temporal.fit <-function(mesh, locs, temp,...){
     spde <-inla.spde2.matern(mesh = mesh, alpha = 2)
-    # number of mesh nodes
     nv <- mesh$n
     if(!is.null(t.index)){
         temp <- t.index # temporal dimension
