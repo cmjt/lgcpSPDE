@@ -10,6 +10,7 @@
 #' given in \link{locs}.
 #' @param mark a vector of length \code{nrow} of marks refering to each point location
 #' @param mark.family assumed likelihood for mark, by defalt "gaussian".
+#' #' @param hyper prior for the copy parameter by default is a N(0,10) i.e.,  list(theta=list(prior='normal', param=c(0,10)))
 #' @param verbose Logical, if \code{TRUE}, model fitting is output
 #' the console.
 #'
