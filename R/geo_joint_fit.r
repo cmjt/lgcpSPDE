@@ -7,7 +7,7 @@
 #' @param locs a list of matrcies. The first element holds observation locations for the first likelihood, where each row corresponds to an observation. The second elemenr holds the observation locations for the second likelihood, each row corresponds to an observation. If no second element is supplied the observation locations for the first likelihood are used.
 #' @param response a list (length two) of vectors of each response variable, each corresponds to the respective spatial locations
 #' in \code{locs}.
-#' @param temp (optional) a numeric vector specifying a temporal index for each observation (starting at 1.....T). It is assumed that the temporal indecies are common accross each reponse.
+#' @param temp (optional) a list of  numeric vectors specifying the temporal indcies for each response respectively.
 #' @param covariates (optional) a list (length 2) each element should contain a named data.frame of covariates. The first corresponding to the first likelihood, the second corresponding the the second likelihood.
 #' @param family a character vector of length two specifying the assumed likelihood of each response, by default is c("gaussian","gaussian").
 #' @param control.time (optional) supplied if the \code{temp} argumet is given to fit a spatio-temporal model. This argument
@@ -20,7 +20,7 @@
 #' @param hyper prior for the copy parameter by default is a N(0,10) i.e.,  list(theta=list(prior='normal', param=c(0,10)))
 #' @param control.compute a list of fit statistics the user wants INLA to return. By default this
 #' is \code{list(dic = TRUE, waic = TRUE,cpo = TRUE, config = TRUE)}.
-#' @param non.linear (optional) should be used if the user requires a non-linear covariate to be included in the model
+#' @param non.linear (optional) a list of named lists should be used if the user requires a non-linear covariate to be included for each likelihood. (i.e., non.linear = list(list(random.effect = idx.1, model = "iid"),list(random.effect = idx.2, model = "iid")) if the user wnats a iid effect for some idx.1 for the first likelihood and another for idx.2 for the second)
 #' Must be supplied as a named list with elements \code{random.effect} a numeric vector of the random effect indecies,
 #' and \code{model} the random effect model the user wishes to use for \code{random.effect}
 #' @param verbose Logical if \code{TRUE} model fit is output to screen.
@@ -118,17 +118,20 @@ geo.spatial.j.temporal.fit <-function(mesh, locs, response, covariates, temp, fa
     spde <-inla.spde2.matern(mesh = mesh, alpha = 2)
     nv <- mesh$n
     temp <- temp # temporal dimension
-    k <- (mesh.t <- inla.mesh.1d(temp))$n # number of groups
+    temp.1 <- temp[[1]]
+    temp.2 <- temp[[2]]
+    k.1 <- (mesh.t1 <- inla.mesh.1d(temp.1))$n
+    k.2 <- (mesh.t2 <- inla.mesh.1d(temp.2))$n
     ## create projection matrix for loacations
     response.1 <- response[[1]]
     response.2 <- response[[2]]
     locs.1 <- locs[[1]]
     locs.2 <- locs[[2]]
-    Ast1 <- inla.spde.make.A(mesh = mesh, loc = locs.1, group = temp, n.group = k)
-    Ast2 <- inla.spde.make.A(mesh = mesh, loc = locs.2, group = temp, n.group = k)
-    field.1 <- inla.spde.make.index('field.1', n.spde = spde$n.spde, group = temp, n.group = k)
-    field.2 <- inla.spde.make.index('field.2', n.spde = spde$n.spde, group = temp, n.group = k)
-    copy.field <- inla.spde.make.index('copy.field', n.spde = spde$n.spde, group = temp, n.group = k)
+    Ast1 <- inla.spde.make.A(mesh = mesh, loc = locs.1, group = temp.1, n.group = k.1)
+    Ast2 <- inla.spde.make.A(mesh = mesh, loc = locs.2, group = temp.2, n.group = k.2)
+    field.1 <- inla.spde.make.index('field.1', n.spde = spde$n.spde, group = temp, n.group = k.1)
+    field.2 <- inla.spde.make.index('field.2', n.spde = spde$n.spde, group = temp, n.group = k.2)
+    copy.field <- inla.spde.make.index('copy.field', n.spde = spde$n.spde, group = temp.2, n.group = k.2)
     if(!is.null(covariates)){
         m.1 <- make.covs(covariates[[1]])
         m.2 <- make.covs(covariates[[2]])
@@ -178,19 +181,24 @@ geo.spatial.j.nl.temporal.fit <-function(mesh, locs, response, covariates, temp,
     spde <-inla.spde2.matern(mesh = mesh, alpha = 2)
     nv <- mesh$n
     temp <- temp # temporal dimension
-    k <- (mesh.t <- inla.mesh.1d(temp))$n # number of groups
+    temp.1 <- temp[[1]]
+    temp.2 <- temp[[2]]
+    k.1 <- (mesh.t1 <- inla.mesh.1d(temp.1))$n
+    k.2 <- (mesh.t2 <- inla.mesh.1d(temp.2))$n
     ## create projection matrix for loacations
     response.1 <- response[[1]]
     response.2 <- response[[2]]
     locs.1 <- locs[[1]]
     locs.2 <- locs[[2]]
-    u <- non.linear[["random.effect"]]
-    u.mod <- non.linear[["model"]]
-    Ast1 <- inla.spde.make.A(mesh = mesh, loc = locs.1, group = temp, n.group = k)
-    Ast2 <- inla.spde.make.A(mesh = mesh, loc = locs.2, group = temp, n.group = k)
-    field.1 <- inla.spde.make.index('field.1', n.spde = spde$n.spde, group = temp, n.group = k)
-    field.2 <- inla.spde.make.index('field.2', n.spde = spde$n.spde, group = temp, n.group = k)
-    copy.field <- inla.spde.make.index('copy.field', n.spde = spde$n.spde, group = temp, n.group = k)
+    u <- non.linear[[1]][["random.effect"]]
+    u.mod <- non.linear[[1]][["model"]]
+    u.2 <- non.linear[[2]][["random.effect"]]
+    u.mod.2 <- non.linear[[2]][["model"]]
+    Ast1 <- inla.spde.make.A(mesh = mesh, loc = locs.1, group = temp.1, n.group = k.1)
+    Ast2 <- inla.spde.make.A(mesh = mesh, loc = locs.2, group = temp.2, n.group = k.2)
+    field.1 <- inla.spde.make.index('field.1', n.spde = spde$n.spde, group = temp, n.group = k.1)
+    field.2 <- inla.spde.make.index('field.2', n.spde = spde$n.spde, group = temp, n.group = k.2)
+    copy.field <- inla.spde.make.index('copy.field', n.spde = spde$n.spde, group = temp.2, n.group = k.2)
     if(!is.null(covariates)){
         m.1 <- make.covs(covariates[[1]])
         m.2 <- make.covs(covariates[[2]])
@@ -203,13 +211,13 @@ geo.spatial.j.nl.temporal.fit <-function(mesh, locs, response, covariates, temp,
                             effects=list(field.1 = field.1, beta0 = rep(1,nrow(locs.1)),cov.effects = cov.effects.1,
                                          random = u))
         stk.2 <- inla.stack(data=list(y=cbind(NA,response.2)),
-                            A=list( Ast2,Ast2,1,1),
+                            A=list( Ast2,Ast2,1,1,1),
                             effects=list(field.2 = field.2,copy.field = copy.field,
-                                         alpha0 = rep(1,nrow(locs.2)),cov.effects = cov.effects.2))
+                                         alpha0 = rep(1,nrow(locs.2)),cov.effects = cov.effects.2, random.2 = u.2))
         stack <- inla.stack(stk.1,stk.2)
         x = "\"field.1\""
         cov.form <- paste(cov.form.1,"+",cov.form.2)
-        formula = paste("y", "~  0 + beta0 + alpha0 + f(random, model = u.mod) +", cov.form,
+        formula = paste("y", "~  0 + beta0 + alpha0 + f(random, model = u.mod) + f(random.2, model = u.mod.2) +", cov.form,
                         " + f(field.1, model=spde, group = field.1.group, control.group = control.time)",
                         "+ f(field.2, model=spde, group = field.2.group , control.group = control.time)",
                     "+ f(copy.field, copy =", x, ",fixed=FALSE, hyper = hyper )")
