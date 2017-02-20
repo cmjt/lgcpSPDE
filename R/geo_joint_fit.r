@@ -230,7 +230,7 @@ geo.spatial.j.nl.temporal.fit <-function(mesh, locs, response, covariates, temp,
                             A=list( Ast2,Ast2,1),
                             effects=list(field.2 = field.2, copy.field = copy.field,alpha0 = rep(1,nrow(locs.2))))
         stack <- inla.stack(stk.1,stk.2)
-        formula <- y ~ 0 + beta0 + alpha0 + f(field.1, model=spde) +  f(random, model = u.mod) +
+        formula <- y ~ 0 + beta0 + alpha0 + f(field.1, model=spde) +  f(random, model = u.mod) + f(random.2, model = u.mod.2) +
             f(field.2, model=spde) +
             f(copy.field, copy = "field.1", fixed=FALSE, hyper = hyper )
     }
