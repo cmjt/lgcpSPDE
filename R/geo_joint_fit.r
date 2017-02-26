@@ -35,7 +35,7 @@ geo.joint.fit <- function(mesh = NULL,  locs = NULL, response = NULL, temp = NUL
                           control.inla = list(strategy='gaussian',int.strategy = 'eb'),
                           hyper = list(theta=list(prior='normal', param=c(0,10))),
                           control.compute = list(dic = TRUE, waic = TRUE,cpo = TRUE, config = TRUE),
-                          non.linear = NULL, sig0 = 1, rho0 = 0.3  verbose = FALSE){
+                          non.linear = NULL, sig0 = 1, rho0 = 0.3,  verbose = FALSE){
     if(is.null(temp)){
         fit <- geo.spatial.j.fit(mesh = mesh, locs = locs, response = response,covariates = NULL,
                                  family = family, control.inla = control.inla, control.compute = control.compute,
