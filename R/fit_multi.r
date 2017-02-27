@@ -28,14 +28,19 @@
 
 fit.multi <- function(locs = NULL, mesh = NULL, temp = NULL, binary.response = NULL, density.response = NULL,
                       family = rep(c("binomial","gamma"),3),
-                      hyper = list(intra = list(beta_1 = list(theta=list(prior='normal', param=c(0,10))),
-                                                beta_2 = list(theta=list(prior='normal', param=c(0,10))),
-                                                beta_3 = list(theta=list(prior='normal', param=c(0,10)))),
-                                   inter = list(beta_z3 = list(theta=list(prior='normal', param=c(0,10))),
-                                                gamma_z3 = list(theta=list(prior='normal', param=c(0,10))),
-                                                beta_y3 = list(theta=list(prior='normal', param=c(0,10))),
-                                                gamma_y3 = list(theta=list(prior='normal', param=c(0,10))))),
-                      control.time = list(model = 'ar1', param = list(theta = list(prior='pccor1', param = c(0, 0.9)))),
+                      hyper = list(
+                          intra =list(
+                              beta_1 = list(theta=list(prior='normal', param=c(0,10))),
+                              beta_2 = list(theta=list(prior='normal', param=c(0,10))),
+                              beta_3 = list(theta=list(prior='normal', param=c(0,10)))),
+                          inter = list(
+                              beta_z3 = list(theta=list(prior='normal', param=c(0,10))),
+                              gamma_z3 = list(theta=list(prior='normal', param=c(0,10))),
+                              beta_y3 = list(theta=list(prior='normal', param=c(0,10))),
+                              gamma_y3 = list(theta=list(prior='normal', param=c(0,10))))),
+                      control.time = list(
+                          model = 'ar1',param = list(
+                                            theta = list(prior='pccor1', param = c(0, 0.9)))),
                       control.inla = list(strategy='gaussian',int.strategy = 'eb'),
                       control.compute = list(dic = TRUE, waic = TRUE,cpo = TRUE, config = TRUE),
                       sig0 = 1, rho0 = 0.3, verbose = FALSE){
