@@ -1,4 +1,6 @@
-### function to fit model used in bird paper
+#' function to fit model used in bird paper
+#' @return A \code{inla} result object
+#'
 #' @param locs BTO GBFS site locations
 #' @param mesh Delauney triangulation of the UK
 #' @param temp years of GBFS
