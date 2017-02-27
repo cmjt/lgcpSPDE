@@ -25,6 +25,8 @@
 #' @param sig0 by default = 1, typical standard deviation to use pc priors for hyperparams of spde model
 #' @param rho0 by default = 0.3, typical range to use pc priors for hyperparams of spde model
 #' @param verbose Logical if \code{TRUE} model fit is output to screen.
+#'
+#' @export
 
 fit.multi <- function(locs = NULL, mesh = NULL, temp = NULL, binary.response = NULL, density.response = NULL,
                       family = rep(c("binomial","gamma"),3),
