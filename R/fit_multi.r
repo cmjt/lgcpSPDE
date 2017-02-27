@@ -7,7 +7,7 @@
 #' @param density.response list of length three. each refering to non-zero density of the bird species
 #' sparrowhawk, collared dove, house sparrow respectively.
 #' @param family a character vector of length two specifying the assumed likelihood of each species' response, by default
-#' is c("binomial","gamma").
+#' is rep(c("binomial","gamma"),3).
 #' @param control.time (optional) supplied if the \code{temp} argumet is given to fit a spatio-temporal model. This argument
 #' controls the model and prior put on the hyperparameters of the model for the temporal component of the spatio-temporal
 #' model. By default this is \code{list(model = 'ar1', param = list(theta = list(prior='pccor1', param = c(0, 0.9))))}
@@ -27,7 +27,7 @@
 #' @param verbose Logical if \code{TRUE} model fit is output to screen.
 
 fit.multi <- function(locs = NULL, mesh = NULL, temp = NULL, binary.response = NULL, density.response = NULL,
-                      family = c("binomial","gamma"),
+                      family = rep(c("binomial","gamma"),3),
                       hyper = list(intra = list(beta_1 = list(theta=list(prior='normal', param=c(0,10))),
                                                 beta_2 = list(theta=list(prior='normal', param=c(0,10))),
                                                 beta_3 = list(theta=list(prior='normal', param=c(0,10)))),
