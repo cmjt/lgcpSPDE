@@ -27,7 +27,7 @@
 #' @param sig0 by default = 1, typical standard deviation to use pc priors for hyperparams of spde model
 #' @param rho0 by default = 0.3, typical range to use pc priors for hyperparams of spde model
 #' @param verbose Logical if \code{TRUE} model fit is output to screen.
-#' @param control.mode inla option to speed up computation by giving starting values from a previos model
+#' @param ... add inla options to speed up computation i.e., by giving starting values from a previos model
 #'
 #' @export
 
@@ -49,7 +49,7 @@ fit.multi <- function(locs = NULL, mesh = NULL, temp = NULL, binary.response = N
                       control.inla = list(strategy='gaussian',int.strategy = 'eb'),
                       control.compute = list(dic = TRUE, waic = TRUE,cpo = TRUE, config = TRUE),
                       sig0 = 1, rho0 = 0.3, verbose = FALSE,
-                      control.mode = NULL){
+                      ...){
     spde <- lgcpSPDE:::inla.spde2.matern.new(mesh, prior.pc.rho = c(rho0, 0.5), prior.pc.sig = c(sig0, 0.5))
     k <- length(table(temp))
     A <- inla.spde.make.A(mesh, loc = locs,group = temp)
@@ -115,7 +115,7 @@ fit.multi <- function(locs = NULL, mesh = NULL, temp = NULL, binary.response = N
                    control.inla = control.inla,
                    control.compute = control.compute,
                    verbose = verbose,
-                   control.mode = control.mode)
+                   ...)
     
     
 }
