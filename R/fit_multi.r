@@ -25,7 +25,9 @@
 #' @param control.compute a list of fit statistics the user wants INLA to return. By default this
 #' is \code{list(dic = TRUE, waic = TRUE,cpo = TRUE, config = TRUE)}.
 #' @param sig0 by default = 1, typical standard deviation to use pc priors for hyperparams of spde model
+#' @param Psig by default = 0.5 prob for sigma of pc prior
 #' @param rho0 by default = 0.3, typical range to use pc priors for hyperparams of spde model
+#' @param Prho by default = 0.5 prob for rho of pc prior
 #' @param verbose Logical if \code{TRUE} model fit is output to screen.
 #' @param ... add inla options to speed up computation i.e., by giving starting values from a previos model
 #'
@@ -48,9 +50,9 @@ fit.multi <- function(locs = NULL, mesh = NULL, temp = NULL, binary.response = N
                                             theta = list(prior='pccor1', param = c(0, 0.9)))),
                       control.inla = list(strategy='gaussian',int.strategy = 'eb'),
                       control.compute = list(dic = TRUE, waic = TRUE,cpo = TRUE, config = TRUE),
-                      sig0 = 1, rho0 = 0.3, verbose = FALSE,
+                      sig0 = 1,Psig = 0.5, rho0 = 0.3,Prho = 0.5, verbose = FALSE,
                       ...){
-    spde <- lgcpSPDE:::inla.spde2.matern.new(mesh, prior.pc.rho = c(rho0, 0.5), prior.pc.sig = c(sig0, 0.5))
+    spde <- lgcpSPDE:::inla.spde2.matern.new(mesh, prior.pc.rho = c(rho0, Prho), prior.pc.sig = c(sig0, Psig))
     k <- length(table(temp))
     A <- inla.spde.make.A(mesh, loc = locs,group = temp)
     zsp <- binary.response[[1]]
