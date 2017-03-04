@@ -75,7 +75,7 @@ geo.fit <- function(mesh = NULL,  locs = NULL, response = NULL, temp = NULL,cova
                                         temp = temp, family = family, control.time = control.time,
                                         control.inla = control.inla, control.compute = control.compute,
                                         non.linear = non.linear, prediction = prediction, sig0 = sig0,  Psig = Psig,
-                                        rho0 = rho0, Prho = Prho
+                                        rho0 = rho0, Prho = Prho,
                                         verbose = verbose, ...)
     }
     return(fit)
