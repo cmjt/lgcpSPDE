@@ -27,9 +27,11 @@
 #' named list with \code{pred.locs} the locations where predictionas are to be made, and only if a spatio-tempral
 #' model is to be fitted \code{pred.temp} the temporal indecies for the predictions (the same length as \code{pred.locs}).
 #' @param sig0 by default = 1, typical standard deviation to use pc priors for hyperparams of spde model
+#' @param Psig by default = 0.5 prob for sigma of pc prior
 #' @param rho0 by default = 0.3, typical range to use pc priors for hyperparams of spde model
+#' @param Prho by default = 0.5 prob for rho of pc prior
 #' @param verbose Logical if \code{TRUE} model fit is output to screen.
-#'
+#' @param ... add inla options to speed up computation i.e., by giving starting values from a previos model
 #'
 #'
 #'
@@ -43,33 +45,38 @@ geo.fit <- function(mesh = NULL,  locs = NULL, response = NULL, temp = NULL,cova
                     control.time = list(model = 'ar1', param = list(theta = list(prior='pccor1', param = c(0, 0.9)))),
                     control.inla = list(strategy='gaussian',int.strategy = 'eb'),
                     control.compute = list(dic = TRUE, waic = TRUE,cpo = TRUE, config = TRUE),
-                    non.linear = NULL, prediction = NULL, sig0 = 1, rho0 = 0.3, verbose = FALSE){
+                    non.linear = NULL, prediction = NULL, sig0 = 1,Psig = 0.5, rho0 = 0.3,Prho = 0.5,
+                    verbose = FALSE, ...){
     if(is.null(temp)&is.null(covariates)){
         fit <- geo.spatial.fit(mesh = mesh, locs = locs, response = response,covariates = NULL,
                                family = family, control.inla = control.inla, control.compute = control.compute,
-                               non.linear = non.linear, prediction = prediction,sig0 = sig0, rho0 = rho0,
-                               verbose = verbose)
+                               non.linear = non.linear, prediction = prediction,sig0 = sig0, Psig = Psig,
+                               rho0 = rho0, Prho = Prho,
+                               verbose = verbose, ...)
     }
     if(is.null(temp)&!is.null(covariates)){
         fit <- geo.spatial.fit(mesh = mesh, locs = locs, response = response,covariates = covariates,
                                family = family, control.inla = control.inla, control.compute = control.compute,
-                               non.linear = non.linear, prediction = prediction, sig0 = sig0, rho0 = rho0,
-                               verbose = verbose)
+                               non.linear = non.linear, prediction = prediction, sig0 = sig0, Psig = Psig,
+                               rho0 = rho0, Prho = Prho,
+                               verbose = verbose, ...)
     }
     if(!is.null(temp)&is.null(covariates)){
         fit <- geo.spatial.temporal.fit(mesh = mesh, locs = locs, response = response, temp = temp,
                                         family = family, covariates = NULL,
                                         control.time = control.time, control.inla = control.inla,
                                         control.compute = control.compute,
-                                        non.linear = non.linear, prediction = prediction,sig0 = sig0, rho0 = rho0,
-                                        verbose = verbose)
+                                        non.linear = non.linear, prediction = prediction,sig0 = sig0, Psig = Psig,
+                                        rho0 = rho0, Prho = Prho, 
+                                        verbose = verbose, ...)
     }
     if(!is.null(temp)&!is.null(covariates)){
         fit <- geo.spatial.temporal.fit(mesh = mesh, locs = locs, response = response,covariates = covariates,
                                         temp = temp, family = family, control.time = control.time,
                                         control.inla = control.inla, control.compute = control.compute,
-                                        non.linear = non.linear, prediction = prediction, sig0 = sig0, rho0 = rho0,
-                                        verbose = verbose)
+                                        non.linear = non.linear, prediction = prediction, sig0 = sig0,  Psig = Psig,
+                                        rho0 = rho0, Prho = Prho
+                                        verbose = verbose, ...)
     }
     return(fit)
 }
@@ -81,8 +88,8 @@ geo.fit <- function(mesh = NULL,  locs = NULL, response = NULL, temp = NULL,cova
 #' spatial only model fitting
 #'
 geo.spatial.fit <- function(mesh, locs, response, covariates, family, control.inla, control.compute,
-                            non.linear, prediction, sig0, rho0, verbose ){
-    spde <-inla.spde2.matern.new(mesh, prior.pc.rho = c(rho0, 0.5), prior.pc.sig = c(sig0, 0.5))
+                            non.linear, prediction, sig0, Psig, rho0, Prho, verbose, ... ){
+    spde <-inla.spde2.matern.new(mesh, prior.pc.rho = c(rho0, Prho), prior.pc.sig = c(sig0, Psig))
     nv <- mesh$n
     n <- nrow(locs)
     if(is.null(covariates)&is.null(non.linear)&is.null(prediction)){
@@ -190,7 +197,8 @@ geo.spatial.fit <- function(mesh, locs, response, covariates, family, control.in
                    control.predictor=list(A=inla.stack.A(stack)),
                    control.inla = control.inla,
                    control.compute = control.compute,
-                   verbose = verbose)
+                   verbose = verbose,
+                   ...)
     return(result)
 }
 
@@ -203,11 +211,11 @@ geo.spatial.fit <- function(mesh, locs, response, covariates, family, control.in
 #'
 geo.spatial.temporal.fit <- function(mesh, locs, response, covariates, temp,  family,
                                     control.time, control.inla, control.compute,
-                                    non.linear, prediction,sig0, rho0, verbose ){
+                                    non.linear, prediction,sig0,Psig, rho0, Prho, verbose, ... ){
     nv <- mesh$n
     k <- (mesh.t <- inla.mesh.1d(temp))$n
     n <- nrow(locs)
-    spde <-inla.spde2.matern.new(mesh, prior.pc.rho = c(rho0, 0.5), prior.pc.sig = c(sig0, 0.5))
+    spde <-inla.spde2.matern.new(mesh, prior.pc.rho = c(rho0, Prho), prior.pc.sig = c(sig0, Psig))
     k <- (mesh.t <- inla.mesh.1d(temp))$n
     field <- inla.spde.make.index('field',n.spde = spde$n.spde, group = temp, n.group = k)
     Ast <- inla.spde.make.A(mesh = mesh, loc = locs ,group = temp, n.group = k)
@@ -322,7 +330,8 @@ geo.spatial.temporal.fit <- function(mesh, locs, response, covariates, temp,  fa
                    control.predictor=list(A=inla.stack.A(stack)),
                    control.inla = control.inla,
                    control.compute = control.compute,
-                   verbose = verbose)
+                   verbose = verbose,
+                   ...)
     return(result)
 }
 

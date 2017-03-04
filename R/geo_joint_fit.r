@@ -24,9 +24,11 @@
 #' Must be supplied as a named list with elements \code{random.effect} a numeric vector of the random effect indecies,
 #' and \code{model} the random effect model the user wishes to use for \code{random.effect}
 #' @param sig0 by default = 1, typical standard deviation to use pc priors for hyperparams of spde model
+#' @param Psig by default = 0.5 prob for sigma of pc prior
 #' @param rho0 by default = 0.3, typical range to use pc priors for hyperparams of spde model
+#' @param Prho by default = 0.5 prob for rho of pc prior
 #' @param verbose Logical if \code{TRUE} model fit is output to screen.
-#' 
+#' @param ... add inla options to speed up computation i.e., by giving starting values from a previos model
 #' @export
 
 geo.joint.fit <- function(mesh = NULL,  locs = NULL, response = NULL, temp = NULL,covariates = NULL,
@@ -35,27 +37,28 @@ geo.joint.fit <- function(mesh = NULL,  locs = NULL, response = NULL, temp = NUL
                           control.inla = list(strategy='gaussian',int.strategy = 'eb'),
                           hyper = list(theta=list(prior='normal', param=c(0,10))),
                           control.compute = list(dic = TRUE, waic = TRUE,cpo = TRUE, config = TRUE),
-                          non.linear = NULL, sig0 = 1, rho0 = 0.3,  verbose = FALSE){
+                          non.linear = NULL, sig0 = 1,Psig = 0.5, rho0 = 0.3,Prho = 0.5,
+                          verbose = FALSE, ...){
     if(is.null(temp)){
         fit <- geo.spatial.j.fit(mesh = mesh, locs = locs, response = response,covariates = NULL,
                                  family = family, control.inla = control.inla, control.compute = control.compute,
-                                 hyper = hyper, sig0 = sig0, rho0 = rho0,
-                                 verbose = verbose)
+                                 hyper = hyper, sig0 = sig0, Psig = Psig, rho0 = rho0, Prho = Prho,
+                                 verbose = verbose, ...)
     }
     if(!is.null(temp)&is.null(non.linear)){
         fit <- geo.spatial.j.temporal.fit(mesh = mesh, locs = locs, response = response, temp = temp,
                                           family = family, covariates = NULL,
                                           control.time = control.time, control.inla = control.inla,
                                           hyper = hyper, control.compute = control.compute,
-                                          sig0 = sig0, rho0 = rho0,
-                                          verbose = verbose)
+                                          sig0 = sig0, Psig = Psig, rho0 = rho0, Prho = Prho,
+                                          verbose = verbose, ...)
     }
     if(!is.null(temp)&!is.null(non.linear)){
         fit <- geo.spatial.j.nl.temporal.fit(mesh = mesh, locs = locs, response = response,covariates = covariates,
                                              temp = temp, family = family, control.time = control.time,
-                                             sig0 = sig0, rho0 = rho0,
+                                             sig0 = sig0, Psig = Psig, rho0 = rho0, Prho = Prho,
                                              control.inla = control.inla, hyper = hyper, control.compute = control.compute,
-                                             non.linear = non.linear,  verbose = verbose)
+                                             non.linear = non.linear,  verbose = verbose, ...)
     }
     return(fit)
 }
@@ -64,8 +67,8 @@ geo.joint.fit <- function(mesh = NULL,  locs = NULL, response = NULL, temp = NUL
 #' spatial only fitting
 #' 
 geo.spatial.j.fit <- function(mesh, locs, response, covariates, family,  control.inla,
-                              hyper, control.compute, sig0, rho0, verbose){
-    spde <-inla.spde2.matern.new(mesh, prior.pc.rho = c(rho0, 0.5), prior.pc.sig = c(sig0, 0.5))
+                              hyper, control.compute, sig0, Psig, rho0, Prho, verbose, ...){
+    spde <-inla.spde2.matern.new(mesh, prior.pc.rho = c(rho0, Prho), prior.pc.sig = c(sig0, Psig))
     nv <- mesh$n
     response.1 <- response[[1]]
     response.2 <- response[[2]]
@@ -110,7 +113,8 @@ geo.spatial.j.fit <- function(mesh, locs, response, covariates, family,  control
                    control.predictor=list(A=inla.stack.A(stack)),
                    control.inla = control.inla,
                    control.compute = control.compute,
-                   verbose = verbose)
+                   verbose = verbose,
+                   ...)
     return(result)
 
 }
@@ -118,8 +122,8 @@ geo.spatial.j.fit <- function(mesh, locs, response, covariates, family,  control
 
 #' spatio-temporal model fitting 
 geo.spatial.j.temporal.fit <-function(mesh, locs, response, covariates, temp, family, control.time, control.inla,
-                              hyper, control.compute, sig0, rho0, verbose){
-    spde <- inla.spde2.matern.new(mesh, prior.pc.rho = c(rho0, 0.5), prior.pc.sig = c(sig0, 0.5))
+                              hyper, control.compute, sig0, Psig, rho0, Prho, verbose, ...){
+    spde <- inla.spde2.matern.new(mesh, prior.pc.rho = c(rho0, Prho), prior.pc.sig = c(sig0, Psig))
     nv <- mesh$n
     temp <- temp # temporal dimension
     temp.1 <- temp[[1]]
@@ -174,15 +178,16 @@ geo.spatial.j.temporal.fit <-function(mesh, locs, response, covariates, temp, fa
                    control.predictor=list(A=inla.stack.A(stack)),
                    control.inla = control.inla,
                    control.compute = control.compute,
-                   verbose = verbose)
+                   verbose = verbose,
+                   ...)
     return(result)
 }
 
 
 
 geo.spatial.j.nl.temporal.fit <-function(mesh, locs, response, covariates, temp, family, control.time, control.inla,
-                              hyper, non.linear, control.compute,sig0, rho0,  verbose){
-    spde <- inla.spde2.matern.new(mesh, prior.pc.rho = c(rho0, 0.5), prior.pc.sig = c(sig0, 0.5))
+                              hyper, non.linear, control.compute,sig0, Psig, rho0, Prho,  verbose, ...){
+    spde <- inla.spde2.matern.new(mesh, prior.pc.rho = c(rho0, Prho), prior.pc.sig = c(sig0, Psig))
     nv <- mesh$n
     temp <- temp # temporal dimension
     temp.1 <- temp[[1]]
@@ -243,7 +248,8 @@ geo.spatial.j.nl.temporal.fit <-function(mesh, locs, response, covariates, temp,
                    control.predictor=list(A=inla.stack.A(stack)),
                    control.inla = control.inla,
                    control.compute = control.compute,
-                   verbose = verbose)
+                   verbose = verbose,
+                   ...)
     return(result)
 }
                          
