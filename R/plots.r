@@ -35,7 +35,6 @@ find.fields <- function(x = NULL, mesh = NULL, n.t = NULL, sd = FALSE, plot = FA
         for (i in idx[1]:idx[n]){
             sds [[i-idx[1]+1]] <- lapply(1:t, function(j) {r <- inla.mesh.project(proj, field = x$summary.random[[i]]$sd[1:spde$n.spde + (j-1)*spde$n.spde]);if(!is.null(spatial.polygon)) r[!inside] <- NA;  return(r)})
         }
-        if(!is.null(spatial.polygon)) for(i in 1:n){sds[[i-idx[1]+1]][!inside] <- NA}
         if(plot){plot.fields( x = x, mesh = mesh, n.t = n.t, sd = sd, spatial.polygon = spatial.polygon,...)}
     }else{
         means <- list()
