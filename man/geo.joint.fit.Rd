@@ -2,41 +2,60 @@
 % Please edit documentation in R/geo_joint_fit.r
 \name{geo.joint.fit}
 \alias{geo.joint.fit}
-\title{Function to fit a joint spatio-temporal model to geo-statistical data where one spatio-
-temporal component is shared between the responses}
+\title{Function to fit a  either a spatial or spatio-temporal joint model to geo-statistical data with an intercept and covariates for each likelihood}
 \usage{
-geo.joint.fit(mesh = NULL, locs.1 = NULL, locs.2 = NULL,
-  response.1 = NULL, response.2 = NULL, t.index = NULL,
-  covariates = NULL, family = c("gaussian", "gaussian"), verbose = FALSE,
-  prior.rho = list(theta = list(prior = "pccor1", param = c(0, 0.9))),
-  hyper = list(theta = list(prior = "normal", param = c(0, 10))),
-  control.inla = list(strategy = "gaussian", int.strategy = "eb"))
+geo.joint.fit(mesh = NULL, locs = NULL, response = NULL, temp = NULL,
+  covariates = NULL, family = c("gaussian", "gaussian"),
+  control.time = list(model = "ar1", param = list(theta = list(prior =
+  "pccor1", param = c(0, 0.9)))), control.inla = list(strategy = "gaussian",
+  int.strategy = "eb"), hyper = list(theta = list(prior = "normal", param =
+  c(0, 10))), control.compute = list(dic = TRUE, waic = TRUE, cpo = TRUE,
+  config = TRUE), non.linear = NULL, sig0 = 1, rho0 = 0.3,
+  verbose = FALSE)
 }
 \arguments{
 \item{mesh}{a ``mesh'' object i.e. delauney triangulation of the domain, an
 object returned by \link{make.mesh}.}
 
-\item{covariates}{a named data.frame of covariates}
+\item{locs}{a list of matrcies. The first element holds observation locations for the first likelihood, where each row corresponds to an observation. The second elemenr holds the observation locations for the second likelihood, each row corresponds to an observation. If no second element is supplied the observation locations for the first likelihood are used.}
 
-\item{family}{a character vector specifying the assumed likelihoods of the response, by default is c("gaussian,"gaussian").}
+\item{response}{a list (length two) of vectors of each response variable, each corresponds to the respective spatial locations
+in \code{locs}.}
+
+\item{temp}{(optional) a list of  numeric vectors specifying the temporal indcies for each response respectively.}
+
+\item{covariates}{(optional) a list (length 2) each element should contain a named data.frame of covariates. The first corresponding to the first likelihood, the second corresponding the the second likelihood.}
+
+\item{family}{a character vector of length two specifying the assumed likelihood of each response, by default is c("gaussian","gaussian").}
+
+\item{control.time}{(optional) supplied if the \code{temp} argumet is given to fit a spatio-temporal model. This argument
+controls the model and prior put on the hyperparameters of the model for the temporal component of the spatio-temporal
+model. By default this is \code{list(model = 'ar1', param = list(theta = list(prior='pccor1', param = c(0, 0.9))))}
+which is a pc.prior put on the rho coefficient of a AR(1) model with P(rho>0)=0.9. Assumed to be shared accross both responses
+Refer to Simpson, martins, and rue for further details *****put in proper refs*****}
+
+\item{control.inla}{a list which controls the fitting procedures INLA uses see Rue et al. ***ref book***
+by default this is \code{list(strategy='gaussian',int.strategy = 'eb')} for quick and dirty fitting.}
+
+\item{hyper}{prior for the copy parameter by default is a N(0,10) i.e.,  list(theta=list(prior='normal', param=c(0,10)))}
+
+\item{control.compute}{a list of fit statistics the user wants INLA to return. By default this
+is \code{list(dic = TRUE, waic = TRUE,cpo = TRUE, config = TRUE)}.}
+
+\item{non.linear}{(optional) a list of named lists should be used if the user requires a non-linear covariate to be included for each likelihood. (i.e., non.linear = list(list(random.effect = idx.1, model = "iid"),list(random.effect = idx.2, model = "iid")) if the user wnats a iid effect for some idx.1 for the first likelihood and another for idx.2 for the second)
+Must be supplied as a named list with elements \code{random.effect} a numeric vector of the random effect indecies,
+and \code{model} the random effect model the user wishes to use for \code{random.effect}}
+
+\item{sig0}{by default = 1, typical standard deviation to use pc priors for hyperparams of spde model}
+
+\item{rho0}{by default = 0.3, typical range to use pc priors for hyperparams of spde model}
 
 \item{verbose}{Logical if \code{TRUE} model fit is output to screen.}
-
-\item{prior.rho}{prior for the temporal correlation coefficient, by default a \code{pcprior} is used with \code{param=c(0-0.9)}.}
-
-\item{locs}{a matrix of observation locations, where each row corresponds to the observation.}
-
-\item{response}{a matrix of response variables, each row corresponds to the spatial locations
-in \code{locs}, the first column is the first response as a result of a
-spatio-temporal process we want to ``copy'' into the second column response.}
-
-\item{temp}{a numeric vector specifying a temporal index for each observation (starting at 1.....T)}
 }
 \value{
 A \code{inla} result object
 }
 \description{
-Function to fit a joint spatio-temporal model to geo-statistical data where one spatio-
-temporal component is shared between the responses
+Function to fit a  either a spatial or spatio-temporal joint model to geo-statistical data with an intercept and covariates for each likelihood
 }
 

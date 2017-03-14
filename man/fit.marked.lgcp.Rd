@@ -19,7 +19,8 @@ given in \link{locs}.}
 
 \item{mark}{a vector of length \code{nrow} of marks refering to each point location}
 
-\item{mark.family}{assumed likelihood for mark, by defalt "gaussian".}
+\item{mark.family}{assumed likelihood for mark, by defalt "gaussian".
+#' @param hyper prior for the copy parameter by default is a N(0,10) i.e.,  list(theta=list(prior='normal', param=c(0,10)))}
 
 \item{verbose}{Logical, if \code{TRUE}, model fitting is output
 the console.}
