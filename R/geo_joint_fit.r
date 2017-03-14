@@ -40,14 +40,14 @@ geo.joint.fit <- function(mesh = NULL,  locs = NULL, response = NULL, temp = NUL
                           non.linear = NULL, sig0 = 1,Psig = 0.5, rho0 = 0.3,Prho = 0.5,
                           verbose = FALSE, ...){
     if(is.null(temp)){
-        fit <- geo.spatial.j.fit(mesh = mesh, locs = locs, response = response,covariates = NULL,
+        fit <- geo.spatial.j.fit(mesh = mesh, locs = locs, response = response,covariates = covariates,
                                  family = family, control.inla = control.inla, control.compute = control.compute,
                                  hyper = hyper, sig0 = sig0, Psig = Psig, rho0 = rho0, Prho = Prho,
                                  verbose = verbose, ...)
     }
     if(!is.null(temp)&is.null(non.linear)){
         fit <- geo.spatial.j.temporal.fit(mesh = mesh, locs = locs, response = response, temp = temp,
-                                          family = family, covariates = NULL,
+                                          family = family, covariates = covariates,
                                           control.time = control.time, control.inla = control.inla,
                                           hyper = hyper, control.compute = control.compute,
                                           sig0 = sig0, Psig = Psig, rho0 = rho0, Prho = Prho,
