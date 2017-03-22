@@ -53,6 +53,7 @@ fit.multi <- function(locs = NULL, mesh = NULL, temp = NULL, binary.response = N
                       sig0 = 1,Psig = 0.5, rho0 = 0.3,Prho = 0.5, verbose = FALSE,
                       ...){
     spde <- lgcpSPDE:::inla.spde2.matern.new(mesh, prior.pc.rho = c(rho0, Prho), prior.pc.sig = c(sig0, Psig))
+    extra.args <- list(...)
     k <- length(table(temp))
     A <- inla.spde.make.A(mesh, loc = locs,group = temp)
     zsp <- binary.response[[1]]
@@ -113,7 +114,7 @@ fit.multi <- function(locs = NULL, mesh = NULL, temp = NULL, binary.response = N
     result <- inla(as.formula(formula),
                    family = family,
                    data = inla.stack.data(stack),
-                   control.predictor=list(A=inla.stack.A(stack)),
+                   control.predictor=list(A=inla.stack.A(stack),link = extra.args$link),
                    control.inla = control.inla,
                    control.compute = control.compute,
                    verbose = verbose,
