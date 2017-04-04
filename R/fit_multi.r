@@ -50,10 +50,10 @@ fit.multi <- function(locs = NULL, mesh = NULL, temp = NULL, binary.response = N
                                             theta = list(prior='pccor1', param = c(0, 0.9)))),
                       control.inla = list(strategy='gaussian',int.strategy = 'eb'),
                       control.compute = list(dic = TRUE, waic = TRUE,cpo = TRUE, config = TRUE),
-                      sig0 = 1,Psig = 0.5, rho0 = 0.3,Prho = 0.5, verbose = FALSE,
+                      sig0 = 1,Psig = 0.5, rho0 = 0.3,Prho = 0.5, verbose = FALSE, link = NULL,
                       ...){
     spde <- lgcpSPDE:::inla.spde2.matern.new(mesh, prior.pc.rho = c(rho0, Prho), prior.pc.sig = c(sig0, Psig))
-    extra.args <- list(...)
+    extra.args <- list(link = link)
     k <- length(table(temp))
     A <- inla.spde.make.A(mesh, loc = locs,group = temp)
     zsp <- binary.response[[1]]
