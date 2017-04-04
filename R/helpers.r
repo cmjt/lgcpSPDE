@@ -137,47 +137,7 @@ fit.two.marks.lgcp <- function(mesh = NULL, locs=NULL, t.index = NULL, mark.1 = 
 
 #############################
 
-## function to fit owl marked pp model including snowfall information (that is covariate with misalignment) (need to generalise)
-owls.pp.fit <- function(mesh = NULL, locs.pp=NULL, locs.cov = NULL, covariate = NULL,  mark = NULL,  mark.family = "binomial", covariate.family = "gaussian", verbose = FALSE, hyper = list(theta=list(prior='normal', param=c(0,10)))){
-    spde <- inla.spde2.matern(mesh, alpha=2)
-    m <- spde$n.spde
-    n <- nrow(locs.pp)
-    #projector matrix for locations of farms
-    Ast <- inla.spde.make.A(mesh=mesh, loc=locs.pp)
-    #pp location response
-    y <- rep(0:1, c( m, n))
-    #effort data for poisson pp
-    st.volume <- diag(spde$param.inla$M0)
-    expected <- c(st.volume, rep(0, n))
-    A.pp<-rBind(Diagonal(n=m,rep(1,m)),Ast)
-    #misalignet covariate data responses and prediction locs
-    #covariate  projector matrix
-    covAst<-inla.spde.make.A(mesh=mesh,loc=locs.cov)
-    cov <- covariate
-    #build data stacks
-    stk.pp <- inla.stack(data=list(y=cbind(y,NA,NA), e=expected),
-                  A=list(A.pp),
-                  tag="pp",
-                  effects=list(list(field.pp=1:m)))
-    stk.cov <- inla.stack(data=list(y=cbind(NA,cov,NA)),
-                  A=list(covAst),tag='covariate',
-                  effects=list(field.cov = 1:m))
-    #stack for response of interest
-    stk.mark <- inla.stack(data=list(y=cbind(NA,NA,mark)),
-                  A=list( Ast,Ast,Ast),tag='mark',
-                  effects=list(copy.field.pp = 1:m, copy.field.cov = 1:m, mark.field = 1:m))
-    stack<-inla.stack(stk.pp,stk.cov,stk.mark)
-    formula <- y ~ 0  + f(field.pp,model=spde) + f(field.cov,model=spde) +
-        f(copy.field.pp,copy="field.pp") +
-        f(copy.field.cov,copy = "field.cov",fixed = FALSE, hyper = hyper) + f(mark.field,model = spde)
-    #call to inla
-    result <- inla(formula, family=c('poisson', covariate.family, mark.family),
-            data=inla.stack.data(stack),
-            control.predictor=list(A=inla.stack.A(stack),compute = TRUE),
-            verbose = verbose)
-    return(list(result=result, stack=stack))
-}
-    
+
                                        
 ######################### fit non standard i.e. non-stationary or TMB    
 fit.ns.kappa.inla <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla = NULL, verbose = NULL){
