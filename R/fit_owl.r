@@ -1,9 +1,9 @@
 ## function to fit owl marked pp model including snowfall information (that is covariate with misalignment)
 
 
-fit.owl <- function(mesh = NULL, locs.pp=NULL, covariate = NULL, locs.mis.cov = NULL, mis.cov = NULL,  mark = NULL,
+fit.owl <- function(mesh = NULL, locs.pp=NULL, covariate = NULL, mark = NULL,
                         mark.family = "binomial",
-                        mis.cov.family = "gaussian", verbose = FALSE,
+                        verbose = FALSE,
                         hyper = list(theta=list(prior='normal', param=c(0,10))),
                         sig0 = 1,Psig = 0.5, rho0 = 0.3,Prho = 0.5,
                         control.inla = list(strategy='gaussian',int.strategy = 'eb'),
@@ -21,28 +21,21 @@ fit.owl <- function(mesh = NULL, locs.pp=NULL, covariate = NULL, locs.mis.cov = 
     st.volume <- diag(spde$param.inla$M0)
     expected <- c(st.volume, rep(0, n))
     A.pp<-rBind(Diagonal(n=m,rep(1,m)),Ast)
-    #misalignet covariate data responses and prediction locs
-    #covariate  projector matrix
-    covAst<-inla.spde.make.A(mesh=mesh,loc=locs.mis.cov)
-    #build data stacks
-    stk.pp <- inla.stack(data=list(y=cbind(y,NA,NA), e=expected),
+    
+    stk.pp <- inla.stack(data=list(y=cbind(y,NA), e=expected),
                   A=list(A.pp),
                   tag="pp",
                   effects=list(list(field.pp=1:m)))
-    stk.cov <- inla.stack(data=list(y=cbind(NA,mis.cov,NA)),
-                  A=list(covAst),tag='covariate',
-                  effects=list(field.cov = 1:m))
     #stack for response of interest
-    stk.mark <- inla.stack(data=list(y=cbind(NA,NA,mark)),
-                  A=list( Ast,Ast,Ast,1,1),tag='mark',
-                  effects=list(copy.field.pp = 1:m, copy.field.cov = 1:m, mark.field = 1:m,
-                               covariate = covariate,
-                               beta0 = rep(1,n)))
-    stack<-inla.stack(stk.pp,stk.cov,stk.mark)
-    formula <- y ~ covariate + f(field.pp,model=spde) + f(field.cov,model=spde) +
-        f(copy.field.pp,copy="field.pp") +
-        f(copy.field.cov,copy = "field.cov",fixed = FALSE, hyper = hyper) + f(mark.field,model = spde)
-    result <- inla(formula, family=c('poisson', mis.cov.family, mark.family),
+    stk.mark <- inla.stack(data=list(y=cbind(NA,mark)),
+                  A=list( Ast,Ast,1),tag='mark',
+                  effects=list(copy.field.pp = 1:m, mark.field = 1:m,
+                               covariate = covariate))
+    stack<-inla.stack(stk.pp,stk.mark)
+    formula <- y ~ 0 + covariate + f(field.pp,model=spde) +
+        f(copy.field.pp,copy="field.pp",hyper = hyper,fixed = FALSE) +
+        + f(mark.field,model = spde)
+    result <- inla(formula, family=c('poisson', mark.family),
             data=inla.stack.data(stack),
             control.predictor=list(A=inla.stack.A(stack),compute = TRUE,link = extra.args$link),
             control.inla = control.inla,
