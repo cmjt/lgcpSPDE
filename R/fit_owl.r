@@ -73,19 +73,19 @@ fit.owl.misaligned <- function(mesh, y, locs, covariates,
     m <- make.covs(covariates)
     cov.effects <- m[[1]]
     cov.form <- m[[2]]
-    stack.y <- inla.stack(data=list(y = cbind(y,NA)),
+    stack.mis <- inla.stack(data=list(y = cbind(misaligned.cov,NA)),
+                            A=list(Ast.mis),tag='misaligned',
+                            effects=list(field.mis = 1:nv))
+    stack.y <- inla.stack(data=list(y = cbind(NA,y)),
                   A=list(Ast,Ast,1),tag='mark',
                   effects=list(field = 1:nv,
                                copy.field = 1:nv,
                                covariate = cov.effects))
-    stack.mis <- inla.stack(data=list(y = cbind(NA,misaligned.cov)),
-                            A=list(Ast.mis),tag='misaligned',
-                            effects=list(field.mis = 1:nv))
     stack <- inla.stack(stack.y, stack.mis)
-     x = "\"field.mis\""
+    x = "\"field.mis\""
     formula <- paste("y", "~  0  +", cov.form," + f(field, model = spde) + f(field.mis, model = spde)",
                      "+ f(copy.field, copy =", x, ",fixed=FALSE, hyper = hyper )")
-    result <- inla(as.formula(formula), family = c(y.family,mis.cov.family),
+    result <- inla(as.formula(formula), family = c(mis.cov.family,y.family),
                    data=inla.stack.data(stack),
                    control.predictor=list(A=inla.stack.A(stack),compute = TRUE,link = extra.args$link),
                    control.inla = control.inla,
