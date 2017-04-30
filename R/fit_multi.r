@@ -62,16 +62,16 @@ fit.multi <- function(locs = NULL, mesh = NULL, temp = NULL, binary.response = N
     yco <- density.response[[2]]
     zhs <- binary.response[[3]]
     yhs <- density.response[[3]]
-    rf1 <- inla.spde.make.index('rf1',n.spde=spde$n.spde,n.group=k)
-    brf1 <- inla.spde.make.index('brf1',n.spde=spde$n.spde,n.group=k)
-    rf2 <- inla.spde.make.index('rf2',n.spde=spde$n.spde,n.group=k)
-    brf2 <- inla.spde.make.index('brf2',n.spde=spde$n.spde,n.group=k)
-    g1rf1 <- inla.spde.make.index('g1rf1',n.spde=spde$n.spde,n.group=k)
-    g2rf2 <- inla.spde.make.index('g2rf2',n.spde=spde$n.spde,n.group=k)
-    rf3 <- inla.spde.make.index('rf3',n.spde=spde$n.spde,n.group=k)
-    g3rf1 <- inla.spde.make.index('g3rf1',n.spde=spde$n.spde,n.group=k)
-    g4rf2 <- inla.spde.make.index('g4rf2',n.spde=spde$n.spde,n.group=k)
-    brf3 <- inla.spde.make.index('brf3',n.spde=spde$n.spde,n.group=k)
+    rf1 <- inla.spde.make.index('rf1',n.spde=spde$n.spde,n.group=k,group = temp)
+    brf1 <- inla.spde.make.index('brf1',n.spde=spde$n.spde,n.group=k,group = temp)
+    rf2 <- inla.spde.make.index('rf2',n.spde=spde$n.spde,n.group=k,group = temp)
+    brf2 <- inla.spde.make.index('brf2',n.spde=spde$n.spde,n.group=k,group = temp)
+    g1rf1 <- inla.spde.make.index('g1rf1',n.spde=spde$n.spde,n.group=k,group = temp)
+    g2rf2 <- inla.spde.make.index('g2rf2',n.spde=spde$n.spde,n.group=k,group = temp)
+    rf3 <- inla.spde.make.index('rf3',n.spde=spde$n.spde,n.group=k,group = temp)
+    g3rf1 <- inla.spde.make.index('g3rf1',n.spde=spde$n.spde,n.group=k,group = temp)
+    g4rf2 <- inla.spde.make.index('g4rf2',n.spde=spde$n.spde,n.group=k,group = temp)
+    brf3 <- inla.spde.make.index('brf3',n.spde=spde$n.spde,n.group=k,group = temp)
     b1 <- hyper$intra[[1]]
     b2 <- hyper$intra[[2]]
     b3 <- hyper$intra[[3]]
@@ -101,15 +101,15 @@ fit.multi <- function(locs = NULL, mesh = NULL, temp = NULL, binary.response = N
                                      alpha2=rep(1,length(yhs))))
     stack<-inla.stack(stk.zsp,stk.ysp,stk.zco,stk.yco,stk.zhs,stk.yhs)
     formula<-y ~ 0 + alpha1 + alpha2 +
-        f(rf1, model = spde, control.group = control.time) +
+        f(rf1, model = spde,group = rf1.group, control.group = control.time) +
         f(brf1, copy = 'rf1' , fixed = FALSE, hyper = b1) +
-        f(rf2, model=spde, control.group = control.time) +
+        f(rf2, model=spde,group = rf2.group, control.group = control.time) +
         f(brf2, copy = 'rf2' , fixed = FALSE,hyper = b2) +
         f(g1rf1, copy = 'rf1' , fixed = FALSE,hyper = g1) +
         f(g2rf2, copy = 'rf2' , fixed = FALSE,hyper = g2) +
         f(g3rf1, copy = 'rf1' , fixed = FALSE,hyper = g3) +
         f(g4rf2, copy = 'rf2' , fixed = FALSE,hyper = g4) +
-        f(rf3, model = spde,control.group = control.time) +
+        f(rf3, model = spde,group = rf3.group,control.group = control.time) +
         f(brf3, copy = 'rf3' , fixed = FALSE,hyper = b3)
     result <- inla(as.formula(formula),
                    family = family,
