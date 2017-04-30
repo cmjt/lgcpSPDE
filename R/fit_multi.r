@@ -109,7 +109,7 @@ fit.multi <- function(locs = NULL, mesh = NULL, temp = NULL, binary.response = N
         f(g2rf2, copy = 'rf2' , fixed = FALSE,hyper = g2) +
         f(g3rf1, copy = 'rf1' , fixed = FALSE,hyper = g3) +
         f(g4rf2, copy = 'rf2' , fixed = FALSE,hyper = g4) +
-        f(rf3, model = spde) +
+        f(rf3, model = spde,control.group = control.time) +
         f(brf3, copy = 'rf3' , fixed = FALSE,hyper = b3)
     result <- inla(as.formula(formula),
                    family = family,
