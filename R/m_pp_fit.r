@@ -91,7 +91,7 @@ fit.marked.lgcp <- function(mesh = NULL, locs=NULL, t.index = NULL, mark = NULL,
             stk.pp <- inla.stack(data=list(y=cbind(y.pp,NA), e=expected),
                                  A=list(rBind(Diagonal(n=nv), Ast),1),
                                  effects=list(field.pp = field.pp,
-                                              cov.effets = cov.effects)
+                                              cov.effets = cov.effects))
             x = "\"field.pp\""
             formula = paste("y", "~  0  + beta0 +", cov.form,
                     " + f(field.pp, model=spde)",
