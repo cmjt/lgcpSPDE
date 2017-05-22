@@ -13,10 +13,19 @@
 #' #' @param hyper prior for the copy parameter by default is a N(0,10) i.e.,  list(theta=list(prior='normal', param=c(0,10)))
 #' @param verbose Logical, if \code{TRUE}, model fitting is output
 #' the console.
-#'
+#' @param control.inla a list which controls the fitting procedures INLA uses see Rue et al. ***ref book***
+#' by default this is \code{list(strategy='gaussian',int.strategy = 'eb')} for quick and dirty fitting.
+#' @param control.compute a list of fit statistics the user wants INLA to return. By default this
+#' is \code{list(dic = TRUE, waic = TRUE,cpo = TRUE, config = TRUE)}.
 #' @importMethodsFrom Matrix diag
 #' @export
-fit.marked.lgcp <- function(mesh = NULL, locs=NULL, t.index = NULL, mark = NULL, covariates = NULL, mark.family = "gaussian", verbose = FALSE, prior.rho = list(theta = list(prior='pccor1', param = c(0, 0.9))),hyper = list(theta=list(prior='normal', param=c(0,10)))){
+fit.marked.lgcp <- function(mesh = NULL, locs=NULL, t.index = NULL, mark = NULL, covariates = NULL,
+                            mark.family = "gaussian", verbose = FALSE,
+                            prior.rho = list(theta = list(prior='pccor1', param = c(0, 0.9))),
+                            hyper = list(theta=list(prior='normal', param=c(0,10))),
+                            control.compute = list(dic = TRUE, waic = TRUE,cpo = TRUE, config = TRUE),
+                            control.inla = list(strategy='gaussian',int.strategy = 'eb'),
+                            ...){
     spde <-inla.spde2.matern(mesh = mesh, alpha = 2)
     # number of observations
     n <- nrow(locs)
@@ -106,8 +115,10 @@ fit.marked.lgcp <- function(mesh = NULL, locs=NULL, t.index = NULL, mark = NULL,
             data=inla.stack.data(stack),
             E=inla.stack.data(stack)$e,
             control.predictor=list(A=inla.stack.A(stack)),
-            control.inla=list(strategy='gaussian',int.strategy = 'eb'),
-            verbose = verbose)
+            verbose = verbose,
+            control.inla = control.inla,
+            control.compute = control.compute,
+            ...)
     result
 }
                                       
