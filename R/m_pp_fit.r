@@ -54,7 +54,7 @@ fit.marked.lgcp <- function(mesh = NULL, locs=NULL, t.index = NULL, mark = NULL,
             stk.pp <- inla.stack(data=list(y=cbind(y.pp,NA), e=expected),
                                  A=list(rBind(Diagonal(n=k*nv), Ast),rBind(Diagonal(n=nv), Ast),1,1),
                                  effects=list(field.pp = field.pp,copy.field = copy.field,
-                                              cov.effets = cov.effects,,beta0 = rep(1,(k*nv+n))))
+                                              cov.effets = cov.effects,beta0 = rep(1,(k*nv+n))))
             x = "\"field.mark\""
             formula = paste("y", "~  0 + beta0 +", cov.form,
                     " + f(field.pp, model=spde, group = field.pp.group, control.group=ctr.g)",
@@ -81,7 +81,7 @@ fit.marked.lgcp <- function(mesh = NULL, locs=NULL, t.index = NULL, mark = NULL,
         st.volume <- diag(spde$param.inla$M0)
         expected <- c(st.volume, rep(0, n))
                                         #fields
-        field.pp <- field.mark <-  copy.field <-1:nv
+        field.pp <- field.mark <-  copy.field <- 1:nv
         if(!is.null(covariates)){
             m <- make.covs(covariates)
             cov.effetcs <- m[[1]]
@@ -98,15 +98,15 @@ fit.marked.lgcp <- function(mesh = NULL, locs=NULL, t.index = NULL, mark = NULL,
                     "+ f(copy.field, copy =",x ,", fixed=FALSE )")
             }else{
                  stk.pp <- inla.stack(data=list(y=cbind(y.pp,NA), e=expected),
-                                 A=list(rBind(Diagonal(n=nv), Ast),rBind(Diagonal(n=nv), Ast),1),
-                                 effects=list(field.pp = field.pp,copy.field = copy.field,beta0 = rep(1,(nv+n))))
+                                 A=list(rBind(Diagonal(n=nv), Ast)),
+                                 effects=list(field.pp = field.pp))
                   formula <- y ~ 0 + beta0  + f(field.pp, model=spde) +
                       f(field.mark, model=spde) +
-                      f(copy.field, copy = "field.mark", fixed=FALSE, hyper = hyper )
+                      f(copy.field, copy = "field.pp", fixed=FALSE, hyper = hyper )
                  }
         stk.mark <- inla.stack(data=list(y=cbind(NA,mark)),
-                               A=list(Ast),
-                               effects=list(field.mark = field.mark))
+                               A=list(Ast,Ast,1),
+                               effects=list(field.mark = field.mark,copy.field = copy.field,beta0 = rep(1,(n))))
         ## combine data stacks
         stack <- inla.stack(stk.pp,stk.mark)
         }
