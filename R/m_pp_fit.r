@@ -25,8 +25,9 @@ fit.marked.lgcp <- function(mesh = NULL, locs=NULL, t.index = NULL, mark = NULL,
                             hyper = list(theta=list(prior='normal', param=c(0,10))),
                             control.compute = list(dic = TRUE, waic = TRUE,cpo = TRUE, config = TRUE),
                             control.inla = list(strategy='gaussian',int.strategy = 'eb'),
-                            ...){
+                            link = NULL, ...){
     spde <-inla.spde2.matern(mesh = mesh, alpha = 2)
+    extra.args <- list(link = link)
     # number of observations
     n <- nrow(locs)
     # number of mesh nodes
@@ -52,10 +53,10 @@ fit.marked.lgcp <- function(mesh = NULL, locs=NULL, t.index = NULL, mark = NULL,
             cov.form <- m[[2]]
                                         #create data stacks
             stk.pp <- inla.stack(data=list(y=cbind(y.pp,NA), e=expected),
-                                 A=list(rBind(Diagonal(n=k*nv), Ast),rBind(Diagonal(n=nv), Ast),1,1),
-                                 effects=list(field.pp = field.pp,copy.field = copy.field,
-                                              cov.effets = cov.effects,beta0 = rep(1,(k*nv+n))))
-            x = "\"field.mark\""
+                                 A=list(rBind(Diagonal(n=k*nv), Ast),1),
+                                 effects=list(field.pp = field.pp,
+                                              cov.effets = cov.effects))
+            x = "\"field.pp\""
             formula = paste("y", "~  0 + beta0 +", cov.form,
                     " + f(field.pp, model=spde, group = field.pp.group, control.group=ctr.g)",
                     "+ f(field.mark, model=spde, group = field.mark.group , control.group=ctr.g)",
@@ -63,14 +64,14 @@ fit.marked.lgcp <- function(mesh = NULL, locs=NULL, t.index = NULL, mark = NULL,
             }else{
                  stk.pp <- inla.stack(data=list(y=cbind(y.pp,NA), e=expected),
                                  A=list(rBind(Diagonal(n=k*nv), Ast),rBind(Diagonal(n=nv), Ast),1),
-                                 effects=list(field.pp = field.pp,copy.field = copy.field,,beta0 = rep(1,(k*nv+n))))
+                                 effects=list(field.pp = field.pp))
                   formula <- y ~ 0 + beta0 + f(field.pp, model=spde, group = field.pp.group, control.group=ctr.g) +
                       f(field.mark, model=spde, group = field.mark.group , control.group=ctr.g) +
-                      f(copy.field, copy = "field.mark", fixed=FALSE, hyper = hyper )
+                      f(copy.field, copy = "field.pp", fixed=FALSE, hyper = hyper )
                  }
         stk.mark <- inla.stack(data=list(y=cbind(NA,mark)),
-                               A=list(Ast),
-                               effects=list(field.mark = field.mark))
+                               A=list(Ast,Ast,1),
+                               effects=list(field.mark = field.mark,copy.field = copy.field,beta0 = rep(1,(n))))
         ## combine data stacks
         stack <- inla.stack(stk.pp,stk.mark)
     }else{
@@ -88,10 +89,10 @@ fit.marked.lgcp <- function(mesh = NULL, locs=NULL, t.index = NULL, mark = NULL,
             cov.form <- m[[2]]
                                         #create data stacks
             stk.pp <- inla.stack(data=list(y=cbind(y.pp,NA), e=expected),
-                                 A=list(rBind(Diagonal(n=nv), Ast),rBind(Diagonal(n=nv), Ast),1,1),
-                                 effects=list(field.pp = field.pp,copy.field = copy.field,
-                                              cov.effets = cov.effects,beta0 = rep(1,(nv+n))))
-            x = "\"field.mark\""
+                                 A=list(rBind(Diagonal(n=nv), Ast),1),
+                                 effects=list(field.pp = field.pp,
+                                              cov.effets = cov.effects)
+            x = "\"field.pp\""
             formula = paste("y", "~  0  + beta0 +", cov.form,
                     " + f(field.pp, model=spde)",
                     "+ f(field.mark, model=spde)",
@@ -114,7 +115,7 @@ fit.marked.lgcp <- function(mesh = NULL, locs=NULL, t.index = NULL, mark = NULL,
     result <- inla(formula, family = c("poisson",mark.family),
             data=inla.stack.data(stack),
             E=inla.stack.data(stack)$e,
-            control.predictor=list(A=inla.stack.A(stack)),
+            control.predictor=list(A=inla.stack.A(stack),link = extra.args$link),
             verbose = verbose,
             control.inla = control.inla,
             control.compute = control.compute,
