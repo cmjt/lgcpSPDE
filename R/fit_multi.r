@@ -24,10 +24,10 @@
 #' By default each is a N(0,10) (i.e.,  list(theta=list(prior='normal', param=c(0,10))))
 #' @param control.compute a list of fit statistics the user wants INLA to return. By default this
 #' is \code{list(dic = TRUE, waic = TRUE,cpo = TRUE, config = TRUE)}.
-#' @param sig0 by default = 1, typical standard deviation to use pc priors for hyperparams of spde model
-#' @param Psig by default = 0.5 prob for sigma of pc prior
-#' @param rho0 by default = 0.3, typical range to use pc priors for hyperparams of spde model
-#' @param Prho by default = 0.5 prob for rho of pc prior
+#' @param spde.new.params by default this is NULL. If supplied must be a named list with components:
+#' \code{sig0} - typical standard deviation to use pc priors for hyperparams of spde model, \code{Psig} -
+#' prob for sigma of pc prior, \code{rho0} - typical range to use pc priors for hyperparams of spde model,
+#' and  \code{Prho} - prob for rho of pc prior
 #' @param verbose Logical if \code{TRUE} model fit is output to screen.
 #' @param ... add inla options to speed up computation i.e., by giving starting values from a previos model
 #'
@@ -50,9 +50,17 @@ fit.multi <- function(locs = NULL, mesh = NULL, temp = NULL, binary.response = N
                                             theta = list(prior='pccor1', param = c(0, 0.9)))),
                       control.inla = list(strategy='gaussian',int.strategy = 'eb'),
                       control.compute = list(dic = TRUE, waic = TRUE,cpo = TRUE, config = TRUE),
-                      sig0 = 1,Psig = 0.5, rho0 = 0.3,Prho = 0.5, verbose = FALSE, link = NULL,
+                      spde.new.params = NULL, verbose = FALSE, link = NULL,
                       ...){
-    spde <- lgcpSPDE:::inla.spde2.matern.new(mesh, prior.pc.rho = c(rho0, Prho), prior.pc.sig = c(sig0, Psig))
+    if(!is.null(spde.new.params)){
+        rho0 <- spde.new.params$rho0
+        Prho <- spde.new.params$Prho
+        sig0 <- spde.new.params$sig0
+        Psig <- spde.new.params$Psig
+        spde <- lgcpSPDE:::inla.spde2.matern.new(mesh, prior.pc.rho = c(rho0, Prho), prior.pc.sig = c(sig0, Psig))
+    }else{
+        spde <- inla.spde2.matern(mesh)
+    }
     extra.args <- list(link = link)
     k <- length(table(temp))
     A <- inla.spde.make.A(mesh, loc = locs,group = temp)
