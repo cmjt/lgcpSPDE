@@ -25,4 +25,4 @@ Description: This package provides functions for the simulation and parameter
 License: GPL
 URL: https://github.com/cmjt/lgcpSPDE
 LazyData: TRUE
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
