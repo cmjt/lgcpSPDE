@@ -309,3 +309,74 @@ inla.spde2.matern.new = function(mesh, alpha=2, prior.pc.rho, prior.pc.sig){
   # End and return
     return(invisible(spde))  
 }
+
+
+### brief sim.fun for bird paper in based on Chapter 3 of spde tutorial
+## (http://www.math.ntnu.no/inla/r-inla.org/tutorials/spde/spde-tutorial.pdf)
+
+sim.fun.bird.paper <- function(n.sim = 1,n = NULL,alpha = NULL,m.var = NULL, kappa = NULL,beta = NULL,e.sd = NULL){
+    alpha = alpha
+    m.var = m.var
+    kappa = kappa
+    beta = beta
+    n = n
+    e.sd = e.sd
+    locs = cbind(runif(n), runif(n))
+    fix1 =fix2 = bet = range1 = sd1 = range2 = sd2 = matrix(NA,nrow = n.sim,ncol = 6)
+    colnames(fix1) = colnames(fix2) = colnames(bet)= c("mean","sd","0.25 quant","0.5 quant","0.975quant","mode")
+    colnames(range1)=colnames(range2)=colnames(sd1)=colnames(sd2) =  c("mean","sd","0.25 quant","0.5 quant","0.975quant","mode")
+    for(i in 1:n.sim){
+        z1 = rMatern(1, locs, kappa[1], m.var[1])
+        z2 = rMatern(1, locs, kappa[2], m.var[2])
+                                        #obvs samples
+        
+        y1 = exp(alpha[1] + z1[1:n] + rnorm(n, 0, e.sd[1]))
+        y2 = alpha[2] + beta[1] * z1[1:n] + z2[1:n] + rnorm(n, 0, e.sd[2])
+        y2 = ifelse(y2>=0,1,0)
+        mesh <- inla.mesh.2d(locs, max.edge=c(0.05, 0.2),
+                             offset=c(0.05, 0.3), cutoff=0.01)
+        spde <- inla.spde2.pcmatern(
+            mesh=mesh, alpha=2, ### mesh and smoothness parameter
+            prior.range=c(0.05, 0.01), ### P(practic.range<0.05)=0.01
+            prior.sigma=c(1, 0.01)) ### P(sigma>1)=0.01
+        hc1 <- list(theta=list(prior='normal', param=c(0,10)))
+        form <- y ~ 0 + intercept1 + intercept2 +
+            f(s1, model=spde) + f(s2, model=spde) +  f(s12, copy="s1", fixed=FALSE, hyper=hc1)
+        A <- inla.spde.make.A(mesh, locs)
+        stack1 <- inla.stack(
+            data=list(y=cbind(as.vector(y1), NA)), A=list(A),
+            effects=list(list(intercept1=1, s1=1:spde$n.spde)))
+        stack2 <- inla.stack(
+            data=list(y=cbind(NA, as.vector(y2))), A=list(A),
+            effects=list(list(intercept2=1, s2=1:spde$n.spde,
+                              s12=1:spde$n.spde)))
+        stack <- inla.stack(stack1, stack2)
+        theta.ini = c(log(1/e.sd[1]^2),c(log(sqrt(8)/kappa), log(sqrt(m.var)))[c(1,3,2,4)], beta)
+        result <- inla(form, c("gamma","binomial"),
+                       data=inla.stack.data(stack),
+                       control.predictor=list(A=inla.stack.A(stack)),
+                       control.mode=list(theta=theta.ini, restart=TRUE),
+                       control.inla=list(int.strategy='eb'))
+        fix1[i,] = summary(result)$fixed[1,1:6]
+        fix2[i,] = summary(result)$fixed[2,1:6]
+        bet[i,] = as.matrix(summary(result)$hyperpar)[6,1:6]
+        range1[i,] = as.matrix(summary(result)$hyperpar)[2,1:6]
+        range2[i,] = as.matrix(summary(result)$hyperpar)[4,1:6]
+        sd1[i,] = as.matrix(summary(result)$hyperpar)[3,1:6]
+        sd2[i,] = as.matrix(summary(result)$hyperpar)[5,1:6]
+        }
+    return(list(intercpt1 = fix1, intercept2 = fix2, Beta = bet,
+                range1 = range1, range2 = range2,sd1 = sd1, sd2 = sd2))
+     ##return(result)
+}
+
+## function from http://www.math.ntnu.no/inla/r-inla.org/tutorials/spde/R/spde-tutorial-functions.R
+
+rMatern <- function(n, coords, kappa, variance, nu=1) {
+    m <- as.matrix(dist(coords))
+    m <- exp((1-nu)*log(2) + nu*log(kappa*m)-
+             lgamma(nu))*besselK(m*kappa, nu)
+    diag(m) <- 1
+    return(drop(crossprod(chol(variance*m),
+                          matrix(rnorm(nrow(coords)*n), ncol=n))))
+}
