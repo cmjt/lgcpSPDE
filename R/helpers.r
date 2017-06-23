@@ -314,7 +314,8 @@ inla.spde2.matern.new = function(mesh, alpha=2, prior.pc.rho, prior.pc.sig){
 ### brief sim.fun for bird paper in based on Chapter 3 of spde tutorial
 ## (http://www.math.ntnu.no/inla/r-inla.org/tutorials/spde/spde-tutorial.pdf)
 
-sim.fun.bird.paper <- function(n.sim = 1,n = NULL,alpha = NULL,m.var = NULL, kappa = NULL,beta = NULL,e.sd = NULL){
+sim.fun.bird.paper <- function(n.sim = 1,n = NULL,alpha = NULL,m.var = NULL, kappa = NULL,beta = NULL,e.sd = NULL,
+                               b.param = c(0,10)){
     alpha = alpha
     m.var = m.var
     kappa = kappa
@@ -339,7 +340,7 @@ sim.fun.bird.paper <- function(n.sim = 1,n = NULL,alpha = NULL,m.var = NULL, kap
             mesh=mesh, alpha=2, ### mesh and smoothness parameter
             prior.range=c(0.05, 0.01), ### P(practic.range<0.05)=0.01
             prior.sigma=c(1, 0.01)) ### P(sigma>1)=0.01
-        hc1 <- list(theta=list(prior='normal', param=c(0,10)))
+        hc1 <- list(theta=list(prior='normal', param = b.param))
         form <- y ~ 0 + intercept1 + intercept2 +
             f(s1, model=spde) + f(s2, model=spde) +  f(s12, copy="s1", fixed=FALSE, hyper=hc1)
         A <- inla.spde.make.A(mesh, locs)
@@ -364,6 +365,7 @@ sim.fun.bird.paper <- function(n.sim = 1,n = NULL,alpha = NULL,m.var = NULL, kap
         range2[i,] = as.matrix(summary(result)$hyperpar)[4,1:6]
         sd1[i,] = as.matrix(summary(result)$hyperpar)[3,1:6]
         sd2[i,] = as.matrix(summary(result)$hyperpar)[5,1:6]
+        cat("iteration",i,"\n")
         }
     return(list(intercpt1 = fix1, intercept2 = fix2, Beta = bet,
                 range1 = range1, range2 = range2,sd1 = sd1, sd2 = sd2))
