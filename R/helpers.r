@@ -352,11 +352,11 @@ sim.fun.bird.paper <- function(n.sim = 1,n = NULL,alpha = NULL,m.var = NULL, kap
             effects=list(list(intercept2=1, s2=1:spde$n.spde,
                               s12=1:spde$n.spde)))
         stack <- inla.stack(stack1, stack2)
-        theta.ini = c(log(1/e.sd[1]^2),c(log(sqrt(8)/kappa), log(sqrt(m.var)))[c(1,3,2,4)], beta)
+        #theta.ini = c(log(1/e.sd[1]^2),c(log(sqrt(8)/kappa), log(sqrt(m.var)))[c(1,3,2,4)], beta)
         result <- inla(form, c("gamma","binomial"),
                        data=inla.stack.data(stack),
                        control.predictor=list(A=inla.stack.A(stack)),
-                       control.mode=list(theta=theta.ini, restart=TRUE),
+                       #control.mode=list(theta=theta.ini, restart=TRUE),
                        control.inla=list(int.strategy='eb'))
         fix1[i,] = summary(result)$fixed[1,1:6]
         fix2[i,] = summary(result)$fixed[2,1:6]
