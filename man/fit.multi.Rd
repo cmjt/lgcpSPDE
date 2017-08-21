@@ -16,7 +16,8 @@ fit.multi(locs = NULL, mesh = NULL, temp = NULL, binary.response = NULL,
   "ar1", param = list(theta = list(prior = "pccor1", param = c(0, 0.9)))),
   control.inla = list(strategy = "gaussian", int.strategy = "eb"),
   control.compute = list(dic = TRUE, waic = TRUE, cpo = TRUE, config = TRUE),
-  sig0 = 1, rho0 = 0.3, verbose = FALSE)
+  sig0 = 1, Psig = 0.5, rho0 = 0.3, Prho = 0.5, verbose = FALSE,
+  link = NULL, ...)
 }
 \arguments{
 \item{locs}{BTO GBFS site locations}
@@ -54,9 +55,15 @@ is \code{list(dic = TRUE, waic = TRUE,cpo = TRUE, config = TRUE)}.}
 
 \item{sig0}{by default = 1, typical standard deviation to use pc priors for hyperparams of spde model}
 
+\item{Psig}{by default = 0.5 prob for sigma of pc prior}
+
 \item{rho0}{by default = 0.3, typical range to use pc priors for hyperparams of spde model}
 
+\item{Prho}{by default = 0.5 prob for rho of pc prior}
+
 \item{verbose}{Logical if \code{TRUE} model fit is output to screen.}
+
+\item{...}{add inla options to speed up computation i.e., by giving starting values from a previos model}
 }
 \value{
 A \code{inla} result object
@@ -64,4 +71,3 @@ A \code{inla} result object
 \description{
 function to fit model used in bird paper
 }
-

@@ -49,4 +49,3 @@ A named matrix (or a list of matricies if spatio-temporal) of point locations an
 \description{
 Function to simulate from a spatial/spatio temporal LGCP (SPDE model)
 }
-

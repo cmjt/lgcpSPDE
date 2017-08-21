@@ -9,8 +9,8 @@ geo.fit(mesh = NULL, locs = NULL, response = NULL, temp = NULL,
   "ar1", param = list(theta = list(prior = "pccor1", param = c(0, 0.9)))),
   control.inla = list(strategy = "gaussian", int.strategy = "eb"),
   control.compute = list(dic = TRUE, waic = TRUE, cpo = TRUE, config = TRUE),
-  non.linear = NULL, prediction = NULL, sig0 = 1, rho0 = 0.3,
-  verbose = FALSE)
+  non.linear = NULL, prediction = NULL, sig0 = 1, Psig = 0.5,
+  rho0 = 0.3, Prho = 0.5, verbose = FALSE, ...)
 }
 \arguments{
 \item{mesh}{a ``mesh'' object i.e. delauney triangulation of the domain, an
@@ -49,9 +49,15 @@ model is to be fitted \code{pred.temp} the temporal indecies for the predictions
 
 \item{sig0}{by default = 1, typical standard deviation to use pc priors for hyperparams of spde model}
 
+\item{Psig}{by default = 0.5 prob for sigma of pc prior}
+
 \item{rho0}{by default = 0.3, typical range to use pc priors for hyperparams of spde model}
 
+\item{Prho}{by default = 0.5 prob for rho of pc prior}
+
 \item{verbose}{Logical if \code{TRUE} model fit is output to screen.}
+
+\item{...}{add inla options to speed up computation i.e., by giving starting values from a previos model}
 }
 \value{
 A \code{inla} result object
@@ -59,4 +65,3 @@ A \code{inla} result object
 \description{
 Function to fit a  either a spatial or spatio-temporal model to geo-statistical data with an intercept and covariates
 }
-

@@ -7,7 +7,9 @@
 fit.marked.lgcp(mesh = NULL, locs = NULL, t.index = NULL, mark = NULL,
   covariates = NULL, mark.family = "gaussian", verbose = FALSE,
   prior.rho = list(theta = list(prior = "pccor1", param = c(0, 0.9))),
-  hyper = list(theta = list(prior = "normal", param = c(0, 10))))
+  hyper = list(theta = list(prior = "normal", param = c(0, 10))),
+  control.compute = list(dic = TRUE, waic = TRUE, cpo = TRUE, config = TRUE),
+  control.inla = list(strategy = "gaussian", int.strategy = "eb"), ...)
 }
 \arguments{
 \item{mesh}{delauney triangulation of area, an object returned by \link{make.mesh} is suitable.}
@@ -24,6 +26,12 @@ given in \link{locs}.}
 
 \item{verbose}{Logical, if \code{TRUE}, model fitting is output
 the console.}
+
+\item{control.compute}{a list of fit statistics the user wants INLA to return. By default this
+is \code{list(dic = TRUE, waic = TRUE,cpo = TRUE, config = TRUE)}.}
+
+\item{control.inla}{a list which controls the fitting procedures INLA uses see Rue et al. ***ref book***
+by default this is \code{list(strategy='gaussian',int.strategy = 'eb')} for quick and dirty fitting.}
 }
 \value{
 An inla model fit object,
@@ -32,4 +40,3 @@ An inla model fit object,
 Fits a spatio-temporal marked point process model
 using INLA coupled with the SPDE approch
 }
-

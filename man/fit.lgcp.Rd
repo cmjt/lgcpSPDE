@@ -37,4 +37,3 @@ A \code{inla} result object
 \description{
 Function to fit a  spatio-temporal log-Gaussian Cox process model  with an intercept and covariates (optional)
 }
-

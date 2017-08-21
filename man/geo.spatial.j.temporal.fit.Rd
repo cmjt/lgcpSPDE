@@ -5,9 +5,9 @@
 \title{spatio-temporal model fitting}
 \usage{
 geo.spatial.j.temporal.fit(mesh, locs, response, covariates, temp, family,
-  control.time, control.inla, hyper, control.compute, sig0, rho0, verbose)
+  control.time, control.inla, hyper, control.compute, sig0, Psig, rho0, Prho,
+  verbose, ...)
 }
 \description{
 spatio-temporal model fitting
 }
-

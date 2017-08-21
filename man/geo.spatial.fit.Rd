@@ -5,9 +5,8 @@
 \title{spatial only model fitting}
 \usage{
 geo.spatial.fit(mesh, locs, response, covariates, family, control.inla,
-  control.compute, non.linear, prediction, sig0, rho0, verbose)
+  control.compute, non.linear, prediction, sig0, Psig, rho0, Prho, verbose, ...)
 }
 \description{
 spatial only model fitting
 }
-

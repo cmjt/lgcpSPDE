@@ -10,8 +10,8 @@ geo.joint.fit(mesh = NULL, locs = NULL, response = NULL, temp = NULL,
   "pccor1", param = c(0, 0.9)))), control.inla = list(strategy = "gaussian",
   int.strategy = "eb"), hyper = list(theta = list(prior = "normal", param =
   c(0, 10))), control.compute = list(dic = TRUE, waic = TRUE, cpo = TRUE,
-  config = TRUE), non.linear = NULL, sig0 = 1, rho0 = 0.3,
-  verbose = FALSE)
+  config = TRUE), non.linear = NULL, sig0 = 1, Psig = 0.5, rho0 = 0.3,
+  Prho = 0.5, verbose = FALSE, ...)
 }
 \arguments{
 \item{mesh}{a ``mesh'' object i.e. delauney triangulation of the domain, an
@@ -48,9 +48,15 @@ and \code{model} the random effect model the user wishes to use for \code{random
 
 \item{sig0}{by default = 1, typical standard deviation to use pc priors for hyperparams of spde model}
 
+\item{Psig}{by default = 0.5 prob for sigma of pc prior}
+
 \item{rho0}{by default = 0.3, typical range to use pc priors for hyperparams of spde model}
 
+\item{Prho}{by default = 0.5 prob for rho of pc prior}
+
 \item{verbose}{Logical if \code{TRUE} model fit is output to screen.}
+
+\item{...}{add inla options to speed up computation i.e., by giving starting values from a previos model}
 }
 \value{
 A \code{inla} result object
@@ -58,4 +64,3 @@ A \code{inla} result object
 \description{
 Function to fit a  either a spatial or spatio-temporal joint model to geo-statistical data with an intercept and covariates for each likelihood
 }
-

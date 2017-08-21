@@ -6,9 +6,8 @@
 \usage{
 geo.spatial.temporal.fit(mesh, locs, response, covariates, temp, family,
   control.time, control.inla, control.compute, non.linear, prediction, sig0,
-  rho0, verbose)
+  Psig, rho0, Prho, verbose, ...)
 }
 \description{
 spatio temporal model fitting
 }
-

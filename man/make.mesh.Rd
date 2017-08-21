@@ -28,4 +28,3 @@ A ``mesh'' object used in an INLA/SPDE model
 \description{
 Wrapper function to create a mesh object as used in an INLA model fit
 }
-
