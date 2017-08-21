@@ -29,3 +29,4 @@ values of the random field within the domain will be returned}
 Plots the estimated random fields or parameter posterior densities from an object returned by
 \link{mark.pp.fit}().
 }
+

@@ -64,3 +64,4 @@ A \code{inla} result object
 \description{
 Function to fit a  either a spatial or spatio-temporal joint model to geo-statistical data with an intercept and covariates for each likelihood
 }
+

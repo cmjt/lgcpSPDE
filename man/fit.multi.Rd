@@ -16,8 +16,7 @@ fit.multi(locs = NULL, mesh = NULL, temp = NULL, binary.response = NULL,
   "ar1", param = list(theta = list(prior = "pccor1", param = c(0, 0.9)))),
   control.inla = list(strategy = "gaussian", int.strategy = "eb"),
   control.compute = list(dic = TRUE, waic = TRUE, cpo = TRUE, config = TRUE),
-  sig0 = 1, Psig = 0.5, rho0 = 0.3, Prho = 0.5, verbose = FALSE,
-  link = NULL, ...)
+  spde.new.params = NULL, verbose = FALSE, link = NULL, ...)
 }
 \arguments{
 \item{locs}{BTO GBFS site locations}
@@ -26,10 +25,10 @@ fit.multi(locs = NULL, mesh = NULL, temp = NULL, binary.response = NULL,
 
 \item{temp}{years of GBFS}
 
-\item{binary.response}{list of length three. each refering to presence = 1, absence = 0 of the bird species
+\item{binary.response}{list of length three. each referring to presence = 1, absence = 0 of the bird species
 sparrowhawk, collared dove, house sparrow respectively}
 
-\item{density.response}{list of length three. each refering to non-zero density of the bird species
+\item{density.response}{list of length three. each referring to non-zero density of the bird species
 sparrowhawk, collared dove, house sparrow respectively.}
 
 \item{family}{a character vector of length two specifying the assumed likelihood of each species' response, by default
@@ -38,32 +37,28 @@ is rep(c("binomial","gamma"),3).}
 \item{hyper}{a list (of length 2) of lists of priors for each copy parameter. The first list has length 3
 specifying the priors on the intra species interaction parameters ( c(beta_1, beta_2, beta_3) i.e., sparrowhawk, collared dove, house sparrow resp.).
 the second element is of length 4 specifying the priors on the inter species interaction parameters
-in order thes refer to the parameters beta_z3, gamma_z3, beta_y3, and gamma_y3 (see model definition).
+in order these refer to the parameters beta_z3, gamma_z3, beta_y3, and gamma_y3 (see model definition).
 By default each is a N(0,10) (i.e.,  list(theta=list(prior='normal', param=c(0,10))))}
 
-\item{control.time}{(optional) supplied if the \code{temp} argumet is given to fit a spatio-temporal model. This argument
+\item{control.time}{(optional) supplied if the \code{temp} argument is given to fit a spatio-temporal model. This argument
 controls the model and prior put on the hyperparameters of the model for the temporal component of the spatio-temporal
 model. By default this is \code{list(model = 'ar1', param = list(theta = list(prior='pccor1', param = c(0, 0.9))))}
-which is a pc.prior put on the rho coefficient of a AR(1) model with P(rho>0)=0.9.
-Refer to Simpson, martins, and rue for further details *****put in proper refs*****}
+which is a pc.prior put on the rho coefficient of a AR(1) model with P(rho>0)=0.9.}
 
-\item{control.inla}{a list which controls the fitting procedures INLA uses see Rue et al. ***ref book***
+\item{control.inla}{a list which controls the fitting procedures INLA uses
 by default this is \code{list(strategy='gaussian',int.strategy = 'eb')} for quick and dirty fitting.}
 
 \item{control.compute}{a list of fit statistics the user wants INLA to return. By default this
 is \code{list(dic = TRUE, waic = TRUE,cpo = TRUE, config = TRUE)}.}
 
-\item{sig0}{by default = 1, typical standard deviation to use pc priors for hyperparams of spde model}
-
-\item{Psig}{by default = 0.5 prob for sigma of pc prior}
-
-\item{rho0}{by default = 0.3, typical range to use pc priors for hyperparams of spde model}
-
-\item{Prho}{by default = 0.5 prob for rho of pc prior}
+\item{spde.new.params}{by default this is NULL. If supplied must be a named list with components:
+\code{sig0} - typical standard deviation to use pc priors for hyperparams of spde model, \code{Psig} -
+prob for sigma of pc prior, \code{rho0} - typical range to use pc priors for hyperparams of spde model,
+and  \code{Prho} - prob for rho of pc prior}
 
 \item{verbose}{Logical if \code{TRUE} model fit is output to screen.}
 
-\item{...}{add inla options to speed up computation i.e., by giving starting values from a previos model}
+\item{...}{add inla options to speed up computation i.e., by giving starting values from a previous model}
 }
 \value{
 A \code{inla} result object
@@ -71,3 +66,4 @@ A \code{inla} result object
 \description{
 function to fit model used in bird paper
 }
+

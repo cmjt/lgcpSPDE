@@ -9,7 +9,8 @@ fit.marked.lgcp(mesh = NULL, locs = NULL, t.index = NULL, mark = NULL,
   prior.rho = list(theta = list(prior = "pccor1", param = c(0, 0.9))),
   hyper = list(theta = list(prior = "normal", param = c(0, 10))),
   control.compute = list(dic = TRUE, waic = TRUE, cpo = TRUE, config = TRUE),
-  control.inla = list(strategy = "gaussian", int.strategy = "eb"), ...)
+  control.inla = list(strategy = "gaussian", int.strategy = "eb"),
+  link = NULL, ...)
 }
 \arguments{
 \item{mesh}{delauney triangulation of area, an object returned by \link{make.mesh} is suitable.}
@@ -40,3 +41,4 @@ An inla model fit object,
 Fits a spatio-temporal marked point process model
 using INLA coupled with the SPDE approch
 }
+
