@@ -1,8 +1,8 @@
 #' function to fit model used in bird paper
-#' @return A \code{inla} result object
+#' @return A \code{inla} result object (see ue, Håvard, Sara Martino, and Nicolas Chopin. 2009.)
 #'
 #' @param locs BTO GBFS site locations
-#' @param mesh Delauney triangulation of the UK
+#' @param mesh Delauney triangulation of the UK (see Lindgren, Finn, Håvard Rue, and Johan Lindström. 2011.)
 #' @param temp years of GBFS
 #' @param binary.response list of length three. each referring to presence = 1, absence = 0 of the bird species
 #' sparrowhawk, collared dove, house sparrow respectively
@@ -13,7 +13,7 @@
 #' @param control.time (optional) supplied if the \code{temp} argument is given to fit a spatio-temporal model. This argument
 #' controls the model and prior put on the hyperparameters of the model for the temporal component of the spatio-temporal
 #' model. By default this is \code{list(model = 'ar1', param = list(theta = list(prior='pccor1', param = c(0, 0.9))))}
-#' which is a pc.prior put on the rho coefficient of a AR(1) model with P(rho>0)=0.9.
+#' which is a pc.prior put on the rho coefficient of a AR(1) model with P(rho>0)=0.9 (see Blangiardo, Marta, Michela Cameletti, Gianluca Baio, and Håvard Rue. 2013.).
 #' @param control.inla a list which controls the fitting procedures INLA uses
 #' by default this is \code{list(strategy='gaussian',int.strategy = 'eb')} for quick and dirty fitting.
 #' @param hyper a list (of length 2) of lists of priors for each copy parameter. The first list has length 3
