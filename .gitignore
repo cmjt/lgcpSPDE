@@ -2,3 +2,5 @@ inst/tmb/bin/
 lgcpSPDE.Rcheck/
 package-build/
 install.sh
+examples/fit_multi.html
+examples/fit_multi.Rmd
