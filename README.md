@@ -11,4 +11,4 @@ Use `devtools::install_github("cmjt/lgcpSPDE")`
 
 The R function fit.multi() provided in this package was used for the analysis of the Garden Bird Feeding Survey (GBFS) data provided by the British Trust for Ornithology (BTO) in the paper `A spatio-temporal multi-species model of a semi-continuous response' to appear in the Journal of the Royal Statistical Society series C.
 
-Please see example folder for use.
+Please see https://github.com/cmjt/examples/fit_multi.md for use.
