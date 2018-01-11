@@ -13,14 +13,24 @@
 #' in \code{locs}.
 #' @param temp a numeric vector specifying a temporal index for each observation (starting at 1.....T).
 #' @param covariates a named data.frame of covariates 
-#' @param prior.rho prior for the temporal correlation coefficient, by default a \code{pcprior} is used with \code{param=c(0-0.9)}. 
+#' @param prior.rho prior for the temporal correlation coefficient, by default a \code{pcprior} is used with \code{param=c(0,0.9)}.
+#' @param prior.range pc prior for the range of the latent field (rnage0,Prange) (i.e., P(range < range0) = Prange NOTE should be changed to reflect range of the domain by default this is 400m 
+#' @param prior.sigma pc prior for the sd of the latent field (sigma0,Psigma) by default c(1,0.05) i.e., prob sigma > 1 = 0.05 
 #' @param verbose Logical if \code{TRUE} model fit is output to screen.
+#' @param control.inla a list to control model fitting (as per inla)
+#' @param control.fixed a list as per inla by default sets prior for precision intercept
 #' @importMethodsFrom Matrix diag
 
 #' @export
 
 
-fit.lgcp <- function(mesh = NULL, mesh.pars = NULL, locs=NULL, temp = NULL, covariates = NULL, prior.rho = list(theta = list(prior='pccor1', param = c(0, 0.9))), verbose = FALSE, control.inla=list(strategy='gaussian',int.strategy = 'eb'),return.attributes = FALSE,ns = NULL){
+fit.lgcp <- function(mesh = NULL, mesh.pars = NULL, locs=NULL, temp = NULL, covariates = NULL,
+                     prior.rho = list(theta = list(prior='pccor1', param = c(0, 0.9))),
+                     prior.range = c(400,0.5) ,
+                     prior.sigma = c(1,0.05),
+                     verbose = FALSE,
+                     control.inla = list(strategy='gaussian',int.strategy = 'eb'),
+                     control.fixed = list(prec.intercept = 0.001), return.attributes = FALSE,ns = NULL){
     if(!is.null(covariates) & is.null(mesh)){
         stop("covariates must be supplied at the mesh nodes, thus, please supply mesh")
         }
@@ -42,10 +52,10 @@ fit.lgcp <- function(mesh = NULL, mesh.pars = NULL, locs=NULL, temp = NULL, cova
                         control.inla = control.inla,
                         verbose = verbose,
                         ns = ns)}else{
-                                    spde <- inla.spde2.matern(mesh = mesh, alpha=2)
-                                        # number of observations
+                                    spde <- inla.spde2.pcmatern(mesh = mesh, prior.range = prior.range, prior.sigma = prior.sigma)
+                                    ## number of observations
                                     n <- nrow(locs)
-                                        # number of mesh nodes
+                                    ## number of mesh nodes
                                     nv <- mesh$n
                                     if(!is.null(temp)){
                                         k <- (mesh.t <- inla.mesh.1d(temp))$n
@@ -96,6 +106,7 @@ fit.lgcp <- function(mesh = NULL, mesh.pars = NULL, locs=NULL, temp = NULL, cova
                                                    E=inla.stack.data(stack)$e,
                                                    control.predictor=list(A=inla.stack.A(stack)),
                                                    control.inla = control.inla,
+                                                   control.fixed = control.fixed,
                                                    verbose = verbose)
                                     if(return.attributes) attributes(result)$mesh <- as.list(mesh)}
     result

@@ -10,7 +10,9 @@
 #' given in \link{locs}.
 #' @param mark a vector of length \code{nrow} of marks refering to each point location
 #' @param mark.family assumed likelihood for mark, by defalt "gaussian".
-#' #' @param hyper prior for the copy parameter by default is a N(0,10) i.e.,  list(theta=list(prior='normal', param=c(0,10)))
+#' @param prior.range pc prior for the range of the latent field (rnage0,Prange) (i.e., P(range < range0) = Prange NOTE should be changed to reflect range of the domain by default this is 400m 
+#' @param prior.sigma pc prior for the sd of the latent field (sigma0,Psigma) by default c(1,0.05) i.e., prob sigma > 1 = 0.05 
+#' @param hyper prior for the copy parameter by default is a N(0,10) i.e.,  list(theta=list(prior='normal', param=c(0,10)))
 #' @param verbose Logical, if \code{TRUE}, model fitting is output
 #' the console.
 #' @param control.inla a list which controls the fitting procedures INLA uses see Rue et al. ***ref book***
@@ -22,11 +24,13 @@
 fit.marked.lgcp <- function(mesh = NULL, locs=NULL, t.index = NULL, mark = NULL, covariates = NULL,
                             mark.family = "gaussian", verbose = FALSE,
                             prior.rho = list(theta = list(prior='pccor1', param = c(0, 0.9))),
+                            prior.range = c(400,0.5) ,
+                            prior.sigma = c(1,0.05),
                             hyper = list(theta=list(prior='normal', param=c(0,10))),
                             control.compute = list(dic = TRUE, waic = TRUE,cpo = TRUE, config = TRUE),
                             control.inla = list(strategy='gaussian',int.strategy = 'eb'),
                             link = NULL, ...){
-    spde <-inla.spde2.matern(mesh = mesh, alpha = 2)
+    spde <-inla.spde2.pcmatern(mesh = mesh, prior.range = prior.range, prior.sigma = prior.sigma)
     extra.args <- list(link = link)
     # number of observations
     n <- nrow(locs)
