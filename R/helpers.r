@@ -382,3 +382,19 @@ rMatern <- function(n, coords, kappa, variance, nu=1) {
     return(drop(crossprod(chol(variance*m),
                           matrix(rnorm(nrow(coords)*n), ncol=n))))
 }
+
+
+## Function to extract useful info from inla model output. Returns as a list. takes additional arguments to aid
+## in extraction of random fields see \code{find.fields}.
+
+extract <- function(fit = NULL,mesh = NULL, n.t = NULL, sd = FALSE, spatial.polygon = NULL){
+    fields = find.fields(x = fit, mesh = mesh, n.t = n.t, sd = sd, plot = FALSE, spatial.polygon = spatial.polygon)
+    summary = summary(fit)
+    marginals.fixed = fit$marginals.fixed
+    marginals.hyperpar = fit$marginals.hyperpar
+    x = list(summary = summary,
+             fields = fields,
+             marginals.fixed = marginals.fixed,
+             marginals.hyperpar = marginals.hyperpar)
+    x
+}
