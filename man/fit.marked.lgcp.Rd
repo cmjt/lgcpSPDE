@@ -7,10 +7,10 @@
 fit.marked.lgcp(mesh = NULL, locs = NULL, t.index = NULL, mark = NULL,
   covariates = NULL, mark.family = "gaussian", verbose = FALSE,
   prior.rho = list(theta = list(prior = "pccor1", param = c(0, 0.9))),
-  hyper = list(theta = list(prior = "normal", param = c(0, 10))),
-  control.compute = list(dic = TRUE, waic = TRUE, cpo = TRUE, config = TRUE),
-  control.inla = list(strategy = "gaussian", int.strategy = "eb"),
-  link = NULL, ...)
+  prior.range = c(400, 0.5), prior.sigma = c(1, 0.05), hyper = list(theta
+  = list(prior = "normal", param = c(0, 10))), control.compute = list(dic =
+  TRUE, waic = TRUE, cpo = TRUE, config = TRUE), control.inla = list(strategy
+  = "gaussian", int.strategy = "eb"), link = NULL, ...)
 }
 \arguments{
 \item{mesh}{delauney triangulation of area, an object returned by \link{make.mesh} is suitable.}
@@ -22,11 +22,16 @@ given in \link{locs}.}
 
 \item{mark}{a vector of length \code{nrow} of marks refering to each point location}
 
-\item{mark.family}{assumed likelihood for mark, by defalt "gaussian".
-#' @param hyper prior for the copy parameter by default is a N(0,10) i.e.,  list(theta=list(prior='normal', param=c(0,10)))}
+\item{mark.family}{assumed likelihood for mark, by defalt "gaussian".}
 
 \item{verbose}{Logical, if \code{TRUE}, model fitting is output
 the console.}
+
+\item{prior.range}{pc prior for the range of the latent field (rnage0,Prange) (i.e., P(range < range0) = Prange NOTE should be changed to reflect range of the domain by default this is 400m}
+
+\item{prior.sigma}{pc prior for the sd of the latent field (sigma0,Psigma) by default c(1,0.05) i.e., prob sigma > 1 = 0.05}
+
+\item{hyper}{prior for the copy parameter by default is a N(0,10) i.e.,  list(theta=list(prior='normal', param=c(0,10)))}
 
 \item{control.compute}{a list of fit statistics the user wants INLA to return. By default this
 is \code{list(dic = TRUE, waic = TRUE,cpo = TRUE, config = TRUE)}.}

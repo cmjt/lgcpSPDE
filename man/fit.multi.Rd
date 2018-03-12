@@ -21,7 +21,7 @@ fit.multi(locs = NULL, mesh = NULL, temp = NULL, binary.response = NULL,
 \arguments{
 \item{locs}{BTO GBFS site locations}
 
-\item{mesh}{Delauney triangulation of the UK}
+\item{mesh}{Delauney triangulation of the UK (see Lindgren, Finn, Håvard Rue, and Johan Lindström. 2011.)}
 
 \item{temp}{years of GBFS}
 
@@ -43,7 +43,7 @@ By default each is a N(0,10) (i.e.,  list(theta=list(prior='normal', param=c(0,1
 \item{control.time}{(optional) supplied if the \code{temp} argument is given to fit a spatio-temporal model. This argument
 controls the model and prior put on the hyperparameters of the model for the temporal component of the spatio-temporal
 model. By default this is \code{list(model = 'ar1', param = list(theta = list(prior='pccor1', param = c(0, 0.9))))}
-which is a pc.prior put on the rho coefficient of a AR(1) model with P(rho>0)=0.9.}
+which is a pc.prior put on the rho coefficient of a AR(1) model with P(rho>0)=0.9 (see Blangiardo, Marta, Michela Cameletti, Gianluca Baio, and Håvard Rue. 2013.).}
 
 \item{control.inla}{a list which controls the fitting procedures INLA uses
 by default this is \code{list(strategy='gaussian',int.strategy = 'eb')} for quick and dirty fitting.}
@@ -61,7 +61,7 @@ and  \code{Prho} - prob for rho of pc prior}
 \item{...}{add inla options to speed up computation i.e., by giving starting values from a previous model}
 }
 \value{
-A \code{inla} result object
+A \code{inla} result object (see ue, Håvard, Sara Martino, and Nicolas Chopin. 2009.)
 }
 \description{
 function to fit model used in bird paper

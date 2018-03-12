@@ -6,8 +6,10 @@
 \usage{
 fit.lgcp(mesh = NULL, mesh.pars = NULL, locs = NULL, temp = NULL,
   covariates = NULL, prior.rho = list(theta = list(prior = "pccor1", param =
-  c(0, 0.9))), verbose = FALSE, control.inla = list(strategy = "gaussian",
-  int.strategy = "eb"), return.attributes = FALSE, ns = NULL)
+  c(0, 0.9))), prior.range = c(400, 0.5), prior.sigma = c(1, 0.05),
+  verbose = FALSE, control.inla = list(strategy = "gaussian", int.strategy =
+  "eb"), control.fixed = list(prec.intercept = 0.001),
+  return.attributes = FALSE, ns = NULL)
 }
 \arguments{
 \item{mesh}{a ``mesh'' object i.e. delauney triangulation of the domain, an
@@ -24,9 +26,17 @@ and \code{max} triangle edge length outside region.}
 
 \item{covariates}{a named data.frame of covariates}
 
-\item{prior.rho}{prior for the temporal correlation coefficient, by default a \code{pcprior} is used with \code{param=c(0-0.9)}.}
+\item{prior.rho}{prior for the temporal correlation coefficient, by default a \code{pcprior} is used with \code{param=c(0,0.9)}.}
+
+\item{prior.range}{pc prior for the range of the latent field (rnage0,Prange) (i.e., P(range < range0) = Prange NOTE should be changed to reflect range of the domain by default this is 400m}
+
+\item{prior.sigma}{pc prior for the sd of the latent field (sigma0,Psigma) by default c(1,0.05) i.e., prob sigma > 1 = 0.05}
 
 \item{verbose}{Logical if \code{TRUE} model fit is output to screen.}
+
+\item{control.inla}{a list to control model fitting (as per inla)}
+
+\item{control.fixed}{a list as per inla by default sets prior for precision intercept}
 
 \item{response}{a vector of response variable, each corresponds to the spatial locations
 in \code{locs}.}
