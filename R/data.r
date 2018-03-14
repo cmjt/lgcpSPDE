@@ -23,3 +23,25 @@ NULL
 #' @keywords datasets
 #' @usage data(world)
 NULL
+#' Spatial polygon of New Zealand (including the Chatham islands)
+#' @name NZ
+#' @format A Spatial Polygons Data Frame of New Zealand
+#' @docType data
+#' @keywords datasets
+#' @usage data(NZ)
+NULL
+#' A dataset taken from the GeoNet Quake (http://quakesearch.geonet.org.nz/)
+#' containing earthquake information in New Zealand (and the Chatham islands) from 14-Februrary-2018 to 14-March-2018
+#' @name earthquakes
+#' @format A data frame containing 382 rows and 6 variables:
+#' \describe{
+#' \item{latitude}{latitude location}
+#' \item{longitude}{longitude location}
+#' \item{origintime} {The UTC time of the event's occurrence (in ISO 8601 format)}
+#' \item{depth}{The focal depth of the event (km)}
+#' \item{magnitude}{The magnitude of the earthquake}
+#' \item{publicid}{The Public Id, a unique earthquake reference code}
+#' }
+#' @docType data
+#' @usage data(earthquakes}
+NULL
