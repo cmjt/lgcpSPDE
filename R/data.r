@@ -33,7 +33,7 @@ NULL
 #' A dataset taken from the GeoNet Quake (http://quakesearch.geonet.org.nz/)
 #' containing earthquake information in New Zealand (and the Chatham islands) from 26-March-2018 to 26-April-2018
 #' @name earthquakes
-#' @format A data frame containing 382 rows and 6 variables:
+#' @format A data frame containing 368 rows and 5 variables:
 #' \describe{
 #' \item{latitude}{latitude location}
 #' \item{longitude}{longitude location}
