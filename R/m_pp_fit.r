@@ -9,16 +9,23 @@
 #' @param t.index a vector of length \code{nrow} of time index units refering to each point location
 #' given in \link{locs}.
 #' @param mark a vector of length \code{nrow} of marks refering to each point location
-#' @param mark.family assumed likelihood for mark, by defalt "gaussian".
-#' @param prior.range pc prior for the range of the latent field (rnage0,Prange) (i.e., P(range < range0) = Prange NOTE should be changed to reflect range of the domain by default this is 400m 
+#' @param covariates a matrix of covariates (for the mark) with named columns.
+#' @param mark.family assumed likelihood for mark, by defalt "gaussian". Ignored if \code{mark} is NULL.
+#' @param prior.range pc prior for the range of the latent field (rnage0,Prange) (i.e., P(range < range0) = Prange
+#' NOTE should be changed to reflect range of the domain by default this is 400, see Martins, Thiago G., et al.
+#' "Penalising model component complexity: A principled, practical approach to constructing priors." (2014) for more details.
 #' @param prior.sigma pc prior for the sd of the latent field (sigma0,Psigma) by default c(1,0.05) i.e., prob sigma > 1 = 0.05 
 #' @param hyper prior for the copy parameter by default is a N(0,10) i.e.,  list(theta=list(prior='normal', param=c(0,10)))
 #' @param verbose Logical, if \code{TRUE}, model fitting is output
 #' the console.
-#' @param control.inla a list which controls the fitting procedures INLA uses see Rue et al. ***ref book***
+#' @param control.inla a list which controls the fitting procedures INLA uses see Blangiardo, Marta, et al.
+#' "Spatial and spatio-temporal models with R-INLA." Spatial and spatio-temporal epidemiology 4 (2013)
 #' by default this is \code{list(strategy='gaussian',int.strategy = 'eb')} for quick and dirty fitting.
 #' @param control.compute a list of fit statistics the user wants INLA to return. By default this
 #' is \code{list(dic = TRUE, waic = TRUE,cpo = TRUE, config = TRUE)}.
+#' @param pp.int Logical, should an intercept term for the lgcp be included. By default FALSE
+#' @param mark.int Logical, should an interpect term for the mark be included. By default FALSE
+#' @param ... other \code{inla} arguments
 #' @importMethodsFrom Matrix diag
 #' @export
 fit.marked.lgcp <- function(mesh = NULL, locs=NULL, t.index = NULL, mark = NULL, covariates = NULL,
@@ -29,12 +36,13 @@ fit.marked.lgcp <- function(mesh = NULL, locs=NULL, t.index = NULL, mark = NULL,
                             hyper = list(theta=list(prior='normal', param=c(0,10))),
                             control.compute = list(dic = TRUE, waic = TRUE,cpo = TRUE, config = TRUE),
                             control.inla = list(strategy='gaussian',int.strategy = 'eb'),
-                            link = NULL, ...){
+                            link = NULL, pp.int = FALSE, mark.int = FALSE,...){
+    if(is.null(mark)){mark.family = NULL} ## NULLS mark family if no mark
     spde <-inla.spde2.pcmatern(mesh = mesh, prior.range = prior.range, prior.sigma = prior.sigma)
     extra.args <- list(link = link)
-    # number of observations
+    ## number of observations
     n <- nrow(locs)
-    # number of mesh nodes
+    ## number of mesh nodes
     nv <- mesh$n
     if(!is.null(t.index)){
         temp <- t.index # temporal dimention
@@ -43,43 +51,77 @@ fit.marked.lgcp <- function(mesh = NULL, locs=NULL, t.index = NULL, mark = NULL,
         y.pp <- rep(0:1, c(k * nv, n))
         ## create projection matrix for loacations
         Ast <- inla.spde.make.A(mesh = mesh, loc = locs, group = temp, n.group = k)
-        ##effect for LGCP used for point pattern
+        ## effect for LGCP used for point pattern
         st.volume <- diag(kronecker(Diagonal(n = k),spde$param.inla$M0))
         expected <- c(st.volume, rep(0, n))
         field.pp <- inla.spde.make.index('field.pp', n.spde = spde$n.spde, group = temp, n.group = k)
         field.mark <- inla.spde.make.index('field.mark', n.spde = spde$n.spde, group = temp, n.group = k)
         copy.field <- inla.spde.make.index('copy.field', n.spde = spde$n.spde, group = temp, n.group = k)
-        # temporal model "ar1"
+        stk.pp <- inla.stack(data=list(y=cbind(y.pp,NA), e=expected),
+                             A=list(rBind(Diagonal(n=k*nv), Ast),1),
+                             effects=list(field.pp = field.pp, alpha0 = rep(1, k*nv + n)))
+        ## temporal model "ar1"
         ctr.g <- list(model='ar1',param = prior.rho)
         if(!is.null(covariates)){
             m <- make.covs(covariates)
             cov.effects <- m[[1]]
             cov.form <- m[[2]]
-            #create data stacks
-            stk.pp <- inla.stack(data=list(y=cbind(y.pp,NA), e=expected),
-                             A=list(rBind(Diagonal(n=k*nv), Ast)),
-                             effects=list(field.pp = field.pp))
             stk.mark <- inla.stack(data=list(y=cbind(NA,mark)),
                                    A=list(Ast,Ast,1,1),
                                    effects=list(field.mark = field.mark,copy.field = copy.field,
                                                 cov.effects = cov.effects,beta0 = rep(1,(n))))
             
             x = "\"field.pp\""
-            formula = paste("y", "~  0 + beta0 +", cov.form,
-                            " + f(field.pp, model=spde, group = field.pp.group, control.group=ctr.g)",
-                            "+ f(field.mark, model=spde, group = field.mark.group , control.group=ctr.g)",
-                    "+ f(copy.field, copy =",x ,", fixed=FALSE )")
+            if(pp.int & mark.int){
+                formula = paste("y", "~  0 + beta0 + alpha0 +", cov.form,
+                                " + f(field.pp, model=spde, group = field.pp.group, control.group=ctr.g)",
+                                "+ f(field.mark, model=spde, group = field.mark.group , control.group=ctr.g)",
+                                "+ f(copy.field, copy =",x ,", fixed=FALSE )")
+            }
+            if(pp.int & !mark.int){
+                formula = paste("y", "~  0 + alpha0 +", cov.form,
+                                " + f(field.pp, model=spde, group = field.pp.group, control.group=ctr.g)",
+                                "+ f(field.mark, model=spde, group = field.mark.group , control.group=ctr.g)",
+                                "+ f(copy.field, copy =",x ,", fixed=FALSE )")
+            }
+            if(!pp.int & mark.int){
+                formula = paste("y", "~  0 + beta0 +", cov.form,
+                                " + f(field.pp, model=spde, group = field.pp.group, control.group=ctr.g)",
+                                "+ f(field.mark, model=spde, group = field.mark.group , control.group=ctr.g)",
+                                "+ f(copy.field, copy =",x ,", fixed=FALSE )")
+            }
+            if(!pp.int & !mark.int){
+                formula = paste("y", "~  0 +", cov.form,
+                                " + f(field.pp, model=spde, group = field.pp.group, control.group=ctr.g)",
+                                "+ f(field.mark, model=spde, group = field.mark.group , control.group=ctr.g)",
+                                "+ f(copy.field, copy =",x ,", fixed=FALSE )")
+            }
         }else{
-            stk.pp <- inla.stack(data=list(y=cbind(y.pp,NA), e=expected),
-                             A=list(rBind(Diagonal(n=k*nv), Ast)),
-                             effects=list(field.pp = field.pp))
             stk.mark <- inla.stack(data=list(y=cbind(NA,mark)),
                                    A=list(Ast,Ast,1),
                                    effects=list(field.mark = field.mark,copy.field = copy.field,
                                                 beta0 = rep(1,(n))))
-            formula <- y ~ 0 + beta0 + f(field.pp, model=spde, group = field.pp.group, control.group=ctr.g) +
-                f(field.mark, model=spde, group = field.mark.group , control.group=ctr.g) +
-                f(copy.field, copy = "field.pp", fixed=FALSE, hyper = hyper)
+            if(pp.int & mark.int){
+                formula <- y ~ 0 + beta0 + alpha0 + f(field.pp, model=spde, group = field.pp.group, control.group=ctr.g) +
+                    f(field.mark, model=spde, group = field.mark.group , control.group=ctr.g) +
+                    f(copy.field, copy = "field.pp", fixed=FALSE, hyper = hyper)
+            }
+             if(pp.int & !mark.int){
+                formula <- y ~ 0 + alpha0 + f(field.pp, model=spde, group = field.pp.group, control.group=ctr.g) +
+                    f(field.mark, model=spde, group = field.mark.group , control.group=ctr.g) +
+                    f(copy.field, copy = "field.pp", fixed=FALSE, hyper = hyper)
+             }
+             if(!pp.int & mark.int){
+                formula <- y ~ 0 + beta0 + f(field.pp, model=spde, group = field.pp.group, control.group=ctr.g) +
+                    f(field.mark, model=spde, group = field.mark.group , control.group=ctr.g) +
+                    f(copy.field, copy = "field.pp", fixed=FALSE, hyper = hyper)
+             }
+             if(!pp.int & !mark.int){
+                formula <- y ~ 0 + f(field.pp, model=spde, group = field.pp.group, control.group=ctr.g) +
+                    f(field.mark, model=spde, group = field.mark.group , control.group=ctr.g) +
+                    f(copy.field, copy = "field.pp", fixed=FALSE, hyper = hyper)
+            }
+            
         }
         ## combine data stacks
         stack <- inla.stack(stk.pp,stk.mark)
@@ -90,37 +132,70 @@ fit.marked.lgcp <- function(mesh = NULL, locs=NULL, t.index = NULL, mark = NULL,
         ##effect for LGCP used for point pattern
         st.volume <- diag(spde$param.inla$M0)
         expected <- c(st.volume, rep(0, n))
-                                        #fields
+        ## fields
         field.pp <- field.mark <-  copy.field <- 1:nv
+        stk.pp <- inla.stack(data=list(y=cbind(y.pp,NA), e=expected),
+                             A=list(rBind(Diagonal(n=nv), Ast)),
+                             effects=list(field.pp = field.pp, alpha0 = rep(1,n+nv)))
         if(!is.null(covariates)){
             m <- make.covs(covariates)
             cov.effects <- m[[1]]
             cov.form <- m[[2]]
-                                        #create data stacks
-            stk.pp <- inla.stack(data=list(y=cbind(y.pp,NA), e=expected),
-                             A=list(rBind(Diagonal(n=nv), Ast)),
-                             effects=list(field.pp = field.pp))
             stk.mark <- inla.stack(data=list(y=cbind(NA,mark)),
                                    A=list(Ast,Ast,1,1),
                                    effects=list(field.mark = field.mark,copy.field = copy.field,
                                                 cov.effects = cov.effects, beta0 = rep(1,(n))))
             
             x = "\"field.pp\""
-            formula = paste("y", "~  0  + beta0 +", cov.form,
-                    " + f(field.pp, model=spde)",
-                    "+ f(field.mark, model=spde)",
-                    "+ f(copy.field, copy =",x ,", fixed=FALSE )")
+            if(pp.int & mark.int){
+                formula = paste("y", "~  0  + beta0 + alpha0 +", cov.form,
+                                " + f(field.pp, model=spde)",
+                                "+ f(field.mark, model=spde)",
+                                "+ f(copy.field, copy =",x ,", fixed=FALSE )")
+            }
+            if(pp.int & !mark.int){
+                formula = paste("y", "~  0  + alpha0 +", cov.form,
+                                " + f(field.pp, model=spde)",
+                                "+ f(field.mark, model=spde)",
+                                "+ f(copy.field, copy =",x ,", fixed=FALSE )")
+            }
+            if(!pp.int & mark.int){
+                formula = paste("y", "~  0  + beta0 +", cov.form,
+                                " + f(field.pp, model=spde)",
+                                "+ f(field.mark, model=spde)",
+                                "+ f(copy.field, copy =",x ,", fixed=FALSE )")
+            }
+            if(!pp.int & !mark.int){
+                formula = paste("y", "~  0  +", cov.form,
+                                " + f(field.pp, model=spde)",
+                                "+ f(field.mark, model=spde)",
+                                "+ f(copy.field, copy =",x ,", fixed=FALSE )")
+            }
         }else{
-            stk.pp <- inla.stack(data=list(y=cbind(y.pp,NA), e=expected),
-                             A=list(rBind(Diagonal(n=nv), Ast)),
-                             effects=list(field.pp = field.pp))
             stk.mark <- inla.stack(data=list(y=cbind(NA,mark)),
                                    A=list(Ast,Ast,1),
                                    effects=list(field.mark = field.mark,copy.field = copy.field,
                                                 beta0 = rep(1,(n))))
-            formula <- y ~ 0 + beta0  + f(field.pp, model=spde) +
-                      f(field.mark, model=spde) +
-                f(copy.field, copy = "field.pp", fixed=FALSE, hyper = hyper )
+            if(pp.int & mark.int){
+                formula <- y ~ 0 + beta0 + alpha0 + f(field.pp, model=spde) +
+                    f(field.mark, model=spde) +
+                    f(copy.field, copy = "field.pp", fixed=FALSE, hyper = hyper )
+            }
+            if(pp.int & !mark.int){
+                formula <- y ~ 0 + alpha0 + f(field.pp, model=spde) +
+                    f(field.mark, model=spde) +
+                    f(copy.field, copy = "field.pp", fixed=FALSE, hyper = hyper )
+            }
+            if(!pp.int & mark.int){
+                formula <- y ~ 0 + beta0 + f(field.pp, model=spde) +
+                    f(field.mark, model=spde) +
+                    f(copy.field, copy = "field.pp", fixed=FALSE, hyper = hyper )
+            }
+            if(!pp.int & !mark.int){
+                formula <- y ~ 0 + f(field.pp, model=spde) +
+                    f(field.mark, model=spde) +
+                    f(copy.field, copy = "field.pp", fixed=FALSE, hyper = hyper )
+            }
         }
         
         ## combine data stacks
