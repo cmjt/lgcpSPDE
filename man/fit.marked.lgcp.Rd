@@ -10,7 +10,8 @@ fit.marked.lgcp(mesh = NULL, locs = NULL, t.index = NULL, mark = NULL,
   prior.range = c(400, 0.5), prior.sigma = c(1, 0.05), hyper = list(theta
   = list(prior = "normal", param = c(0, 10))), control.compute = list(dic =
   TRUE, waic = TRUE, cpo = TRUE, config = TRUE), control.inla = list(strategy
-  = "gaussian", int.strategy = "eb"), link = NULL, ...)
+  = "gaussian", int.strategy = "eb"), link = NULL, pp.int = FALSE,
+  mark.int = FALSE, ...)
 }
 \arguments{
 \item{mesh}{delauney triangulation of area, an object returned by \link{make.mesh} is suitable.}
@@ -22,12 +23,16 @@ given in \link{locs}.}
 
 \item{mark}{a vector of length \code{nrow} of marks refering to each point location}
 
-\item{mark.family}{assumed likelihood for mark, by defalt "gaussian".}
+\item{covariates}{a matrix of covariates (for the mark) with named columns.}
+
+\item{mark.family}{assumed likelihood for mark, by defalt "gaussian". Ignored if \code{mark} is NULL.}
 
 \item{verbose}{Logical, if \code{TRUE}, model fitting is output
 the console.}
 
-\item{prior.range}{pc prior for the range of the latent field (rnage0,Prange) (i.e., P(range < range0) = Prange NOTE should be changed to reflect range of the domain by default this is 400m}
+\item{prior.range}{pc prior for the range of the latent field (rnage0,Prange) (i.e., P(range < range0) = Prange
+NOTE should be changed to reflect range of the domain by default this is 400, see Martins, Thiago G., et al.
+"Penalising model component complexity: A principled, practical approach to constructing priors." (2014) for more details.}
 
 \item{prior.sigma}{pc prior for the sd of the latent field (sigma0,Psigma) by default c(1,0.05) i.e., prob sigma > 1 = 0.05}
 
@@ -36,8 +41,15 @@ the console.}
 \item{control.compute}{a list of fit statistics the user wants INLA to return. By default this
 is \code{list(dic = TRUE, waic = TRUE,cpo = TRUE, config = TRUE)}.}
 
-\item{control.inla}{a list which controls the fitting procedures INLA uses see Rue et al. ***ref book***
+\item{control.inla}{a list which controls the fitting procedures INLA uses see Blangiardo, Marta, et al.
+"Spatial and spatio-temporal models with R-INLA." Spatial and spatio-temporal epidemiology 4 (2013)
 by default this is \code{list(strategy='gaussian',int.strategy = 'eb')} for quick and dirty fitting.}
+
+\item{pp.int}{Logical, should an intercept term for the lgcp be included. By default FALSE}
+
+\item{mark.int}{Logical, should an interpect term for the mark be included. By default FALSE}
+
+\item{...}{other \code{inla} arguments}
 }
 \value{
 An inla model fit object,
