@@ -9,10 +9,13 @@ containing earthquake information in New Zealand (and the Chatham islands) from 
 \describe{
 \item{latitude}{latitude location}
 \item{longitude}{longitude location}
-\item{origintime} {The UTC time of the event's occurrence}
+\item{origintime}{The UTC time of the event's occurrence}
 \item{depth}{The focal depth of the event (km)}
 \item{magnitude}{The magnitude of the earthquake}
 }}
+\usage{
+data(earthquakes)
+}
 \description{
 A dataset taken from the GeoNet Quake (http://quakesearch.geonet.org.nz/)
 containing earthquake information in New Zealand (and the Chatham islands) from 26-March-2018 to 26-April-2018

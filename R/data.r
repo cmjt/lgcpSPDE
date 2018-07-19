@@ -42,7 +42,7 @@ NULL
 #' \item{magnitude}{The magnitude of the earthquake}
 #' }
 #' @docType data
-#' @usage data(earthquakes}
+#' @usage data(earthquakes)
 NULL
 #' A simulated dataset indicating breeding pair presence of Grus Grus in the wetlands on England.
 #' @details Data simulated by Andrea Soriano Redondo (A.Soriano-Redondo@exeter.ac.uk) for the paper
@@ -62,5 +62,5 @@ NULL
 #' \item{PA_ratio}{Wetland perimiter to area ratio}
 #' }
 #' @docType data
-#' @usage data(cranes}
+#' @usage data(cranes)
 NULL

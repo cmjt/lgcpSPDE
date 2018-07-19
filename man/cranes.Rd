@@ -3,15 +3,13 @@
 \docType{data}
 \name{cranes}
 \alias{cranes}
-\title{A simulated dataset indicating breeding pair presence of Grus Grus in the wetlands on England.
-Data simulated by Andrea Soriano Redondo (A.Soriano-Redondo@exeter.ac.uk) for the paper
-"Estimating species distribution in highly dynamic populations using point process models" submitted to Ecography.}
+\title{A simulated dataset indicating breeding pair presence of Grus Grus in the wetlands on England.}
 \format{A data frame containing 5052 rows and 10 variables:
 \describe{
 \item{Wetland_Identity}{numeric wetland ID}
 \item{Lon}{longitude epicentre location of wetland}
 \item{Lat}{latitude epicentre location of wetland}
-\item{Area} {Area of wetland in m^2}
+\item{Area}{Area of wetland in m^2}
 \item{Perimiter}{Wetland perimiter in m}
 \item{Wet_density_buf_NoSea}{Surrounding wetland density}
 \item{Urb_density_buf_NoSea}{Surrouning urban density}
@@ -19,8 +17,13 @@ Data simulated by Andrea Soriano Redondo (A.Soriano-Redondo@exeter.ac.uk) for th
 \item{mark}{A simulated binary mark indicating presence of a Grus Grus breeding pair at the wetland}
 \item{PA_ratio}{Wetland perimiter to area ratio}
 }}
+\usage{
+data(cranes)
+}
 \description{
 A simulated dataset indicating breeding pair presence of Grus Grus in the wetlands on England.
+}
+\details{
 Data simulated by Andrea Soriano Redondo (A.Soriano-Redondo@exeter.ac.uk) for the paper
 "Estimating species distribution in highly dynamic populations using point process models" submitted to Ecography.
 }
