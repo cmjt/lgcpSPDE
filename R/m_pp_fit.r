@@ -23,8 +23,8 @@
 #' by default this is \code{list(strategy='gaussian',int.strategy = 'eb')} for quick and dirty fitting.
 #' @param control.compute a list of fit statistics the user wants INLA to return. By default this
 #' is \code{list(dic = TRUE, waic = TRUE,cpo = TRUE, config = TRUE)}.
-#' @param pp.int Logical, should an intercept term for the lgcp be included. By default FALSE
-#' @param mark.int Logical, should an interpect term for the mark be included. By default FALSE
+#' @param pp.int Logical, should an intercept term for the lgcp be included. By default FALSE. If TURE alpha0 estimated.
+#' @param mark.int Logical, should an interpect term for the mark be included. By default FALSE. If TRUE beta0 estimated.
 #' @param ... other \code{inla} arguments
 #' @importMethodsFrom Matrix diag
 #' @export
