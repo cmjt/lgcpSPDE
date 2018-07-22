@@ -45,9 +45,9 @@ is \code{list(dic = TRUE, waic = TRUE,cpo = TRUE, config = TRUE)}.}
 "Spatial and spatio-temporal models with R-INLA." Spatial and spatio-temporal epidemiology 4 (2013)
 by default this is \code{list(strategy='gaussian',int.strategy = 'eb')} for quick and dirty fitting.}
 
-\item{pp.int}{Logical, should an intercept term for the lgcp be included. By default FALSE}
+\item{pp.int}{Logical, should an intercept term for the lgcp be included. By default FALSE. If TURE alpha0 estimated.}
 
-\item{mark.int}{Logical, should an interpect term for the mark be included. By default FALSE}
+\item{mark.int}{Logical, should an interpect term for the mark be included. By default FALSE. If TRUE beta0 estimated.}
 
 \item{...}{other \code{inla} arguments}
 }
