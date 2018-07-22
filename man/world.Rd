@@ -12,4 +12,3 @@ data(world)
 Spatial polygon of countries worldwide
 }
 \keyword{datasets}
-

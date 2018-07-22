@@ -12,4 +12,3 @@ data(NZ)
 Spatial polygon of New Zealand (including the Chatham islands)
 }
 \keyword{datasets}
-

@@ -11,4 +11,3 @@ Compiles the \code{lgcpSPDE} TMB templates into a shared object
 file. This must be done a single time following installation or
 updating of the package.
 }
-

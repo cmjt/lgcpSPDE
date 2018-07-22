@@ -10,4 +10,3 @@ geo.spatial.j.fit(mesh, locs, response, covariates, family, control.inla, hyper,
 \description{
 spatial only fitting
 }
-

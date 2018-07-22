@@ -11,4 +11,3 @@ geo.spatial.j.temporal.fit(mesh, locs, response, covariates, temp, family,
 \description{
 spatio-temporal model fitting
 }
-

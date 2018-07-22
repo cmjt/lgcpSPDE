@@ -33,4 +33,3 @@ A matrix of values each column a set of observations at each time point
 \description{
 Function to simulate from a spatial/spatio temporal SPDE model
 }
-
