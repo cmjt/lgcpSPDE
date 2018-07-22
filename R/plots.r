@@ -49,5 +49,6 @@ find.fields <- function(x = NULL, mesh = NULL, n.t = NULL, sd = FALSE, plot = FA
             }
         if(plot){plot.fields( x = x, mesh = mesh, n.t = n.t, sd = sd, spatial.polygon = spatial.polygon,...)}
     }
+    names(means) <- names(sds) <- fields
     ifelse(sd,return(sds),return(means))
 }
