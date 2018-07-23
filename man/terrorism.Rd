@@ -23,3 +23,4 @@ data(terrorism)
 A dataset taken from the global terrorism database (GTD) (http://www.start.umd.edu/gtd/)
 containing information of terrorism activity 2010--2016
 }
+

@@ -5,7 +5,7 @@
 \title{Function that extracts the ''random fields'' of the model fitted.}
 \usage{
 find.fields(x = NULL, mesh = NULL, n.t = NULL, sd = FALSE,
-  plot = FALSE, spatial.polygon = NULL, ...)
+  plot = FALSE, spatial.polygon = NULL, dims = c(100, 100), ...)
 }
 \arguments{
 \item{x}{A fitted model from \link{mark.pp.fit}().}
@@ -22,10 +22,12 @@ random fields are plotted.}
 \item{spatial.polygon}{Optional, if a spatial polygon of the domain is supplied, only
 values of the random field within the domain will be returned}
 
+\item{dims}{vector of length two specifying spatial resolution of projection of fields onto the mesh}
+
 \item{...}{additional graphical parameters
 @importFrom fields image.plot}
 }
 \description{
-Plots the estimated random fields or parameter posterior densities from an object returned by
-\link{mark.pp.fit}().
+Function that extracts the ''random fields'' of the model fitted.
 }
+

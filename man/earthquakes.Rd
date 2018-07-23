@@ -20,3 +20,4 @@ data(earthquakes)
 A dataset taken from the GeoNet Quake (http://quakesearch.geonet.org.nz/)
 containing earthquake information in New Zealand (and the Chatham islands) from 26-March-2018 to 26-April-2018
 }
+
