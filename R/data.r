@@ -73,7 +73,8 @@ NULL
 #' @docType data
 #' @usage data(lgcp2D)
 NULL
-#' A cleaned dataset orginally taken from the global terrorism database (GTD) (http://www.start.umd.edu/gtd/)
+#' A cleaned aggregated dataset orginally taken from the global terrorism database (GTD)
+#' (http://www.start.umd.edu/gtd/)
 #' containing information of terrorism activity worldwide 2010--2016
 #' @name terrorism_data
 #' @format A data frame containing 8647 rows and 14 variables:
