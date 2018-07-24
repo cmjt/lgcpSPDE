@@ -11,7 +11,7 @@ containing information of terrorism activity 2010--2016}
 \item{latitude}{latitude location}
 \item{longitude}{longitude location}
 \item{iyear}{year index 2010--2016}
-\item{x.coord}{x coordinate from location projected onto a spheree}
+\item{x.coord}{x coordinate from location projected onto a sphere}
 \item{y.coord}{y coordinate from location projected onto a sphere}
 \item{z.coord}{z coordinate from location projected onto a sphere}
 \item{fatal}{binary, 1 = fatalities occured, 0 = no fatalities}

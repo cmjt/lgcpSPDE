@@ -3,7 +3,7 @@
 \docType{data}
 \name{cranes}
 \alias{cranes}
-\title{A simulated dataset indicating breeding pair presence of Grus Grus in the wetlands on England.}
+\title{A simulated dataset indicating breeding pair presence of Grus Grus in the wetlands of England.}
 \format{A data frame containing 5052 rows and 10 variables:
 \describe{
 \item{Wetland_Identity}{numeric wetland ID}
@@ -21,7 +21,7 @@
 data(cranes)
 }
 \description{
-A simulated dataset indicating breeding pair presence of Grus Grus in the wetlands on England.
+A simulated dataset indicating breeding pair presence of Grus Grus in the wetlands of England.
 }
 \details{
 Data simulated by Andrea Soriano Redondo (A.Soriano-Redondo@exeter.ac.uk) for the paper
