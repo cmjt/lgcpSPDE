@@ -66,4 +66,3 @@ A \code{inla} result object (see ue, Håvard, Sara Martino, and Nicolas Chopin. 
 \description{
 function to fit model used in bird paper
 }
-

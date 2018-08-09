@@ -31,4 +31,3 @@ A cleaned aggregated dataset orginally taken from the global terrorism database 
 (http://www.start.umd.edu/gtd/)
 containing information of terrorism activity worldwide 2010--2016
 }
-

@@ -27,4 +27,3 @@ A simulated dataset indicating breeding pair presence of Grus Grus in the wetlan
 Data simulated by Andrea Soriano Redondo (A.Soriano-Redondo@exeter.ac.uk) for the paper
 "Estimating species distribution in highly dynamic populations using point process models" submitted to Ecography.
 }
-

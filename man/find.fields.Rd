@@ -30,4 +30,3 @@ values of the random field within the domain will be returned}
 \description{
 Function that extracts the ''random fields'' of the model fitted.
 }
-

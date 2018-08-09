@@ -4,23 +4,31 @@
 \name{terrorism}
 \alias{terrorism}
 \title{A dataset taken from the global terrorism database (GTD) (http://www.start.umd.edu/gtd/)
-containing information of terrorism activity 2010--2016}
-\format{A data frame with 55215 rows and 8 variables:
+containing information of terrorism activity 2010--2017}
+\format{A data frame with 72366 rows and 17 variables:
 \describe{
-\item{nkill}{number of fatalities per attack}
+\item{iyear}{numeric year 2010--2017}
+\item{imonth}{numeric month index 1--12}
+\item{iday}{numeric day 1--31 (zeros are a non-entry)}
+\item{country}{country}
 \item{latitude}{latitude location}
 \item{longitude}{longitude location}
-\item{iyear}{year index 2010--2016}
+\item{sucess}{Logical fatal or not. TRUE = fatal}
+\item{nkill}{number of fatalities per attack}
+\item{specificity}{}
+\item{gname}{}
+\item{vicinity}
 \item{x.coord}{x coordinate from location projected onto a sphere}
 \item{y.coord}{y coordinate from location projected onto a sphere}
 \item{z.coord}{z coordinate from location projected onto a sphere}
-\item{fatal}{binary, 1 = fatalities occured, 0 = no fatalities}
+\item{popdensity}{population density M}
+\item{luminosity}{luminosity}
+\item{tt}{time to nearest city}
 }}
 \usage{
 data(terrorism)
 }
 \description{
 A dataset taken from the global terrorism database (GTD) (http://www.start.umd.edu/gtd/)
-containing information of terrorism activity 2010--2016
+containing information of terrorism activity 2010--2017
 }
-

@@ -58,4 +58,3 @@ An inla model fit object,
 Fits a spatio-temporal marked point process model
 using INLA coupled with the SPDE approch
 }
-

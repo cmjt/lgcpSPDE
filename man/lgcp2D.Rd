@@ -15,4 +15,3 @@ data(lgcp2D)
 \description{
 A simulated realisation of a log-Gaussian Cox process 2D
 }
-
