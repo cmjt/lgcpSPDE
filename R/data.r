@@ -1,7 +1,7 @@
 #' A dataset taken from the global terrorism database (GTD) (http://www.start.umd.edu/gtd/)
 #' containing information of terrorism activity 2010--2017
 #' @name terrorism
-#' @format A data frame with 72366 rows and 17 variables:
+#' @format A data frame with 72366 rows and 16 variables:
 #' \describe{
 #' \item{iyear}{numeric year 2010--2017}
 #' \item{imonth}{numeric month index 1--12}
@@ -11,15 +11,14 @@
 #' \item{longitude}{longitude location}
 #' \item{sucess}{Logical fatal or not. TRUE = fatal}
 #' \item{nkill}{number of fatalities per attack}
-#' \item{specificity}{}
-#' \item{gname}{}
-#' \item{vicinity}
+#' \item{specificity}{factor which represents the apatial accuracy of the evets: 1 = most accurate, 5 = worst}
+#' \item{gname}{character name of attack perpetrators}
 #' \item{x.coord}{x coordinate from location projected onto a sphere}
 #' \item{y.coord}{y coordinate from location projected onto a sphere}
 #' \item{z.coord}{z coordinate from location projected onto a sphere}
-#' \item{popdensity}{population density M}
-#' \item{luminosity}{luminosity}
-#' \item{tt}{time to nearest city}
+#' \item{popdensity}{scaled: number of people per kilometer squared}
+#' \item{luminosity}{scaled: luminosity}
+#' \item{tt}{scaled: time to nearest city in minutes}
 #' }
 #' @docType data
 #' @usage data(terrorism)
@@ -84,25 +83,31 @@ NULL
 NULL
 #' A cleaned aggregated dataset orginally taken from the global terrorism database (GTD)
 #' (http://www.start.umd.edu/gtd/)
-#' containing information of terrorism activity worldwide 2010--2016
-#' @name terrorism_data
-#' @format A data frame containing 8647 rows and 14 variables:
+#' containing information of terrorism activity worldwide 2010--2017
+#' @name terrorism_aggregate
+#' @format A data frame containing 10845 rows and 20 variables:
 #' \describe{
 #' \item{latitude}{latitude location}
 #' \item{longitude}{longitude location}
 #' \item{iyear}{year index 2010--2016}
 #' \item{total}{total number of events}
 #' \item{lethal}{number of lethal events}
+#' \item{imonth}{numeric month index 1--12}
+#' \item{iday}{numeric day 1--31 (zeros are a non-entry)}
+#' \item{country}{country}
+#' \item{sucess}{Logical fatal or not. TRUE = fatal}
 #' \item{nkill}{total number of fatalities}
-#' \item{alt}{altitude}
-#' \item{pop}{population}
-#' \item{tt}{time to nearest city (hours)}
-#' \item{lum}{luminosity}
-#' \item{country}{country code}
-#' \item{x.coord}{x coordinate of location projected onto a sphere}
-#' \item{y.coord}{y coordinate of location projected onto a sphere}
-#' \item{z.coord}{z coordinate of location projected onto a sphere}
+#' \item{specificity}{factor which represents the apatial accuracy of the evets: 1 = most accurate, 5 = worst}
+#' \item{gname}{character name of attack perpetrators}
+#' \item{x.coord}{x coordinate from location projected onto a sphere}
+#' \item{y.coord}{y coordinate from location projected onto a sphere}
+#' \item{z.coord}{z coordinate from location projected onto a sphere}
+#' \item{popdensity}{scaled: number of people per kilometer squared}
+#' \item{luminosity}{scaled: luminosity}
+#' \item{tt}{scaled: time to nearest city in minutes}
+#' \item{country.idx}{numeric country index}
+#' \item{originalcount}{total number of fatalities}
 #' }
 #' @docType data
-#' @usage data(terrorism_data)
+#' @usage data(terrorism_aggregate)
 NULL
