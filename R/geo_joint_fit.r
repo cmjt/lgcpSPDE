@@ -135,10 +135,10 @@ geo.spatial.j.temporal.fit <-function(mesh, locs, response, covariates, temp, fa
     response.2 <- response[[2]]
     locs.1 <- locs[[1]]
     locs.2 <- locs[[2]]
-    Ast1 <- inla.spde.make.A(mesh = mesh, loc = locs.1, group = temp.1, n.group = k.1)
-    Ast2 <- inla.spde.make.A(mesh = mesh, loc = locs.2, group = temp.2, n.group = k.2)
-    field.1 <- inla.spde.make.index('field.1', n.spde = spde$n.spde, group = temp, n.group = k.1)
-    field.2 <- inla.spde.make.index('field.2', n.spde = spde$n.spde, group = temp, n.group = k.2)
+    Ast1 <- inla.spde.make.A(mesh = mesh, loc = locs.1,  n.group = k.1)
+    Ast2 <- inla.spde.make.A(mesh = mesh, loc = locs.2,  n.group = k.2)
+    field.1 <- inla.spde.make.index('field.1', n.spde = spde$n.spde, group = temp.1, n.group = k.1)
+    field.2 <- inla.spde.make.index('field.2', n.spde = spde$n.spde, group = temp.2, n.group = k.2)
     copy.field <- inla.spde.make.index('copy.field', n.spde = spde$n.spde, group = temp.2, n.group = k.2)
     if(!is.null(covariates)){
         m.1 <- make.covs(covariates[[1]])
@@ -203,10 +203,10 @@ geo.spatial.j.nl.temporal.fit <-function(mesh, locs, response, covariates, temp,
     u.mod <- non.linear[[1]][["model"]]
     u.2 <- non.linear[[2]][["random.effect"]]
     u.mod.2 <- non.linear[[2]][["model"]]
-    Ast1 <- inla.spde.make.A(mesh = mesh, loc = locs.1, group = temp.1, n.group = k.1)
-    Ast2 <- inla.spde.make.A(mesh = mesh, loc = locs.2, group = temp.2, n.group = k.2)
-    field.1 <- inla.spde.make.index('field.1', n.spde = spde$n.spde, group = temp, n.group = k.1)
-    field.2 <- inla.spde.make.index('field.2', n.spde = spde$n.spde, group = temp, n.group = k.2)
+    Ast1 <- inla.spde.make.A(mesh = mesh, loc = locs.1, n.group = k.1)
+    Ast2 <- inla.spde.make.A(mesh = mesh, loc = locs.2, n.group = k.2)
+    field.1 <- inla.spde.make.index('field.1', n.spde = spde$n.spde, group = temp.1, n.group = k.1)
+    field.2 <- inla.spde.make.index('field.2', n.spde = spde$n.spde, group = temp.2, n.group = k.2)
     copy.field <- inla.spde.make.index('copy.field', n.spde = spde$n.spde, group = temp.2, n.group = k.2)
     if(!is.null(covariates)){
         m.1 <- make.covs(covariates[[1]])
