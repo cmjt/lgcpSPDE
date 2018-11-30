@@ -9,3 +9,4 @@ plot.mesh(x, ...)
 \description{
 plots a tidy mesh (internal function)
 }
+

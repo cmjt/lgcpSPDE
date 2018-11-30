@@ -25,3 +25,4 @@ values of the random field within the domain will be returned}
 \description{
 Plots fields eith spatio-temporal or spatial
 }
+
