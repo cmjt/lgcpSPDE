@@ -106,7 +106,7 @@ fit.lgcp <- function(mesh = NULL, mesh.pars = NULL, locs=NULL, temp = NULL, cova
                                     result <- inla(as.formula(formula), family = "poisson",
                                                    data=inla.stack.data(stack),
                                                    E=inla.stack.data(stack)$e,
-                                                   control.predictor=list(A=inla.stack.A(stack)),
+                                                   control.predictor=list(A = inla.stack.A(stack),compute = TRUE),
                                                    control.inla = control.inla,
                                                    control.fixed = control.fixed,
                                                    verbose = verbose,
