@@ -19,7 +19,18 @@ inwin<-function(proj, window){
     o<-matrix(o,nrow=length(proj$x))
 }
 
-
+## Function to find mesh nodes outwith some spatial polygon
+## relies on inla.mesh.dual function from INLA spde-tutorial
+source("http://inla.r-inla-download.org/r-inla.org/tutorials/spde/R/spde-tutorial-functions.R")
+outwith <- function(mesh = NULL,boundary = NULL){
+    dmesh <- inla.mesh.dual(mesh)
+    w <- sapply(1:length(dmesh), function(i) {
+        if (rgeos::gIntersects(dmesh[i,], boundary))
+            return(gArea(rgeos::gIntersection(dmesh[i,], boundary)))
+        else return(0)
+    })
+    return(w)
+}
                                       
 #############################
 fit.two.marks.lgcp <- function(mesh = NULL, locs=NULL, t.index = NULL, mark.1 = NULL,  mark.2 = NULL, covariates = NULL, mark.family = c("gaussian","gaussian"), verbose = FALSE, prior.rho = list(theta = list(prior='pccor1', param = c(0, 0.9))),hyper = list(theta=list(prior='normal', param=c(0,10)))){
