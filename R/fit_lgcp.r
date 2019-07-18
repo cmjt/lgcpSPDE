@@ -48,7 +48,7 @@ fit.lgcp <- function(mesh = NULL, boundary = NULL, locs = NULL, temp = NULL, cov
         nv <- mesh$n
         if(!is.null(temp)){
             k <- max(temp)
-            inla.mesh.1d(seq(1, k, by = 1))
+            mesh.t <- inla.mesh.1d(seq(1, k, by = 1))
             Ast <- inla.spde.make.A(mesh = mesh,
                                     loc = locs,
                                     n.group = length(mesh.t$n),
