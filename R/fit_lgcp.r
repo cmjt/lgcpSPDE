@@ -51,7 +51,7 @@ fit.lgcp <- function(mesh = NULL, boundary = NULL, locs = NULL, temp = NULL, cov
             mesh.t <- inla.mesh.1d(seq(1, k, by = 1))
             Ast <- inla.spde.make.A(mesh = mesh,
                                     loc = locs,
-                                    n.group = length(mesh.t$n),
+                                    n.group = k,
                                     group = temp, group.mesh = mesh.t)
             field <- inla.spde.make.index('field',n.spde = spde$n.spde, group = temp, n.group = k)
             if(!is.null(boundary)){
