@@ -26,7 +26,7 @@ outwith <- function(mesh = NULL,boundary = NULL){
     dmesh <- inla.mesh.dual(mesh)
     w <- sapply(1:length(dmesh), function(i) {
         if (rgeos::gIntersects(dmesh[i,], boundary))
-            return(gArea(rgeos::gIntersection(dmesh[i,], boundary)))
+            return(rgeos::gArea(rgeos::gIntersection(dmesh[i,], boundary)))
         else return(0)
     })
     return(w)

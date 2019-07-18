@@ -54,7 +54,7 @@ fit.lgcp <- function(mesh = NULL, boundary = NULL, locs = NULL, temp = NULL, cov
                                     group = temp, group.mesh = mesh.t)
             field <- inla.spde.make.index('field',n.spde = spde$n.spde, group = temp, n.group = k)
             if(!is.null(boundary)){
-                w <- outwith(mesh = mesh, boundary = boumdary)
+                w <- outwith(mesh = mesh, boundary = boundary)
                 volume <- rep(w, k) * rep(diag(inla.mesh.fem(mesh.t)$c0), nv)
             }else{
                 volume <- diag(kronecker(Diagonal(n = k),spde$param.inla$M0))
