@@ -21,8 +21,8 @@ inwin<-function(proj, window){
 
 ## Function to find mesh nodes outwith some spatial polygon
 ## relies on inla.mesh.dual function from INLA spde-tutorial
-source("http://inla.r-inla-download.org/r-inla.org/tutorials/spde/R/spde-tutorial-functions.R")
 outwith <- function(mesh = NULL,boundary = NULL){
+    source("http://inla.r-inla-download.org/r-inla.org/tutorials/spde/R/spde-tutorial-functions.R")
     dmesh <- inla.mesh.dual(mesh)
     w <- sapply(1:length(dmesh), function(i) {
         if (rgeos::gIntersects(dmesh[i,], boundary))

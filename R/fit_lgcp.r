@@ -67,8 +67,8 @@ fit.lgcp <- function(mesh = NULL, boundary = NULL, locs = NULL, temp = NULL, cov
             Ast <- inla.spde.make.A(mesh = mesh, loc = locs)
             field  <- 1:nv
             if(!is.null(boundary)){
-                w <- outwith(mesh = mesh, boundary = boumdary)
-                volume <- w * rep(diag(inla.mesh.fem(mesh.t)$c0), nv)
+                w <- outwith(mesh = mesh, boundary = boundary)
+                volume <- w * diag(spde$param.inla$M0)
             }else{
                 volume <- diag(spde$param.inla$M0)
             }
