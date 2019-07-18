@@ -4,9 +4,9 @@
 #'
 #' @param mesh a ``mesh'' object i.e. delauney triangulation of the domain, an
 #' object returned by \link{INLA::inla.mesh.2d}.
+#' @param locs a matrix of observation locations, where each row corresponds to the observation. 
 #' @param boundary spatial polygon of the point pattern observation window (optional). if supplied
 #' weights at the mesh nodes outwith this will be set to zero.
-#' @param locs a matrix of observation locations, where each row corresponds to the observation. 
 #' @param temp a numeric vector specifying a temporal index for each observation (starting at 1.....T) (optional).
 #' @param covariates a named data.frame of covariates (optional) 
 #' @param prior.rho prior for the temporal correlation coefficient, by default a \code{INLA:::pcprior} is used with \code{param = c(0.9,0.9)}.
@@ -21,7 +21,7 @@
 #' @export
 
 
-fit.lgcp <- function(mesh = NULL, boundary = NULL, locs = NULL, temp = NULL, covariates = NULL,
+fit.lgcp <- function(mesh, locs, boundary = NULL, temp = NULL, covariates = NULL,
                      prior.rho = list(theta = list(prior='pccor1', param = c(0.0, 0.9))),
                      prior.range = c(5,0.9) ,
                      prior.sigma = c(1,0.005),
