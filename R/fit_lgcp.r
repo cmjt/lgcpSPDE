@@ -19,6 +19,7 @@
 #' @param verbose Logical if \code{TRUE} model fit is output to screen.
 #' @param control.inla a list to control model fitting (as per inla)
 #' @param control.fixed a list as per inla by default sets prior for precision intercept
+#' @param ... other arguments taken by inla
 #' @importMethodsFrom Matrix diag
 
 #' @export
@@ -30,7 +31,8 @@ fit.lgcp <- function(mesh = NULL, mesh.pars = NULL, locs=NULL, temp = NULL, cova
                      prior.sigma = c(1,0.05),
                      verbose = FALSE,
                      control.inla = list(strategy='gaussian',int.strategy = 'eb'),
-                     control.fixed = list(prec.intercept = 0.001), return.attributes = FALSE,ns = NULL){
+                     control.fixed = list(prec.intercept = 0.001), return.attributes = FALSE,ns = NULL,
+                     ...){
     if(!is.null(covariates) & is.null(mesh)){
         stop("covariates must be supplied at the mesh nodes, thus, please supply mesh")
         }
@@ -104,10 +106,11 @@ fit.lgcp <- function(mesh = NULL, mesh.pars = NULL, locs=NULL, temp = NULL, cova
                                     result <- inla(as.formula(formula), family = "poisson",
                                                    data=inla.stack.data(stack),
                                                    E=inla.stack.data(stack)$e,
-                                                   control.predictor=list(A=inla.stack.A(stack)),
+                                                   control.predictor=list(A = inla.stack.A(stack),compute = TRUE),
                                                    control.inla = control.inla,
                                                    control.fixed = control.fixed,
-                                                   verbose = verbose)
+                                                   verbose = verbose,
+                                                   ...)
                                     if(return.attributes) attributes(result)$mesh <- as.list(mesh)}
     result
 }
