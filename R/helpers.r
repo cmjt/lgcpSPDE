@@ -24,6 +24,7 @@ inwin<-function(proj, window){
 outwith <- function(mesh = NULL,boundary = NULL){
     source("http://inla.r-inla-download.org/r-inla.org/tutorials/spde/R/spde-tutorial-functions.R")
     dmesh <- inla.mesh.dual(mesh)
+    proj4string(dmesh) <- proj4string(boundary)
     w <- sapply(1:length(dmesh), function(i) {
         if (rgeos::gIntersects(dmesh[i,], boundary))
             return(rgeos::gArea(rgeos::gIntersection(dmesh[i,], boundary)))
