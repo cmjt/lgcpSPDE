@@ -265,19 +265,19 @@ fit.ns.mean.TMB <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla = 
 
 
 ############# lgcp using TMB
-fit.lgcp.TMB <- function(mesh = NULL, locs = NULL, ns = NULL, control.inla = NULL, verbose = NULL){
+fit.lgcp.TMB <- function(mesh = NULL){
     if(is.null(ns[["parameters"]]))stop("TMB requires parameter starting values")
     resp <- numeric(mesh$n)
-    resp.c <-as.vector(table(mesh$idx$loc))
+    resp.c <- as.vector(table(mesh$idx$loc))
     if(length(resp.c)==0)stop("mesh needs to be constructed using point pattern locations")
-    resp[unique(mesh$idx$loc)]<- resp.c
+    resp[unique(mesh$idx$loc)] <- resp.c
     meshidxloc <- 1:mesh$n
     data <- list(resp = resp, meshidxloc=meshidxloc)
     spde <- inla.spde2.matern(mesh = mesh,alpha = 2)
     data$spde <- spde$param.inla[c("M0","M1","M2")]
     data$area <- c(diag(data$spde$M0))
     parameters <- ns[["parameters"]]
-    obj <- MakeADFun(data,parameters,random="x",DLL="lgcpspde",silent = verbose )
+    obj <- MakeADFun(data,parameters,random = "x",DLL = "lgcpspde",silent = !verbose )
     opt <- nlminb(obj$par,obj$fn,obj$gr)
     result <- sdreport(obj)
     result
