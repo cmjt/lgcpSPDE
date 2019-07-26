@@ -24,17 +24,17 @@ Type objective_function<Type>::operator() ()
   DATA_STRUCT(spde,spde_t); // this as structure of spde object is defined in r-inla hence using that namespce
   PARAMETER(beta0); // intercept term
   PARAMETER(log_kappa); // kappa of random field
-  PARAMETER_MATRIX(x); //the random field/effect each matrix row is a time step
-  PARAMETER(phi); // parameter of the AR(1) temporal process (only applicable for spatio-temporal model)
+  PARAMETER_ARRAY(x); //the random field/effect each matrix row is a time step
+  PARAMETER(rho); // parameter of the AR(1) temporal process (only applicable for spatio-temporal model)
   int tsteps =  NLEVELS(ID); // number of time steps
   Type kappa = exp(log_kappa); // return the kappa parameter of the Random field
+  Type nll = 0;
   SparseMatrix<Type> Q = Q_spde(spde,kappa); // create the precision matrix from the spde model for the GMRF
   array<Type> st(resp(0).size(),tsteps);
   std::cout << resp(0).size() << "\n";
   st.setZero();
-  Type nll = SEPARABLE(AR1(phi), GMRF(Q))(st); // x the random effect is a GMRF with precision Q
+  nll = SEPARABLE(AR1(rho), GMRF(Q))(x); // x the random effect is a GMRF with precision Q
   for(int j = 0; j < (tsteps - 1); j++){
-    vector<Type> gmrf = x.row(j);
     vector<Type> respj = resp(j);
     for(int i = 0; i <respj.size(); i++){
       Type eta = beta0 + log(area(i)) + gmrf(i); 
@@ -49,4 +49,3 @@ Type objective_function<Type>::operator() ()
 }
 
 
-  
