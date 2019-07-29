@@ -34,7 +34,7 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(area);
   DATA_FACTOR(ID);
   DATA_STRUCT(spde,spde_t); // this as structure of spde object is defined in r-inla hence using that namespce
-  PARAMETER(beta); // regression coefficients
+  PARAMETER_VECTOR(beta); // regression coefficients
   PARAMETER(log_kappa); // kappa of random field
   PARAMETER_ARRAY(x); //the random field/effect each matrix row is a time step
   PARAMETER(rho); // parameter of the AR(1) temporal process (only applicable for spatio-temporal model)
