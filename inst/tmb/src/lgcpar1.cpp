@@ -21,7 +21,15 @@ struct covariate_list : vector<matrix <Type> > {
   }
 };
 
-
+template<class Type>
+Type dpois_stable (const Type &x, const Type &lambda, const int &give_log){
+  Type out;
+  out = pow(lambda, x)*exp(-lambda)/exp(lgamma(x + 1));
+  if (give_log){
+    out = log(out + DBL_MIN);
+  }
+  return out;
+}
 
 template<class Type>
 Type objective_function<Type>::operator() ()
@@ -42,20 +50,17 @@ Type objective_function<Type>::operator() ()
   Type kappa = exp(log_kappa); // return the kappa parameter of the Random field
   Type nll = 0;
   SparseMatrix<Type> Q = Q_spde(spde,kappa); // create the precision matrix from the spde model for the GMRF
-  //array<Type> st(resp(0).size(),tsteps);
-  //st.setZero();
   nll = SEPARABLE(AR1(rho), GMRF(Q))(x); // x the random effect is a GMRF with precision Q
   for(int i = 0; i< (tsteps - 1); i++){
     vector<Type> eta = covariates(i)*beta; // design matrix and regression coeffs. (fixed effects)
     vector<Type> gmrf = (vector<Type> (x.col(i)));
-    //std::cout << x.col(i).size() << "\n";
     vector<Type> respi = resp(i);
     for(int j = 0; j <respi.size(); j++){
       Type mu;
-      mu = eta(j) + log(area(j)) + gmrf(j);
-      Type lambda = exp(mu); // intensity 
-      nll -= dpois(respi(j),lambda,true);
-     
+      mu = eta(j) +  gmrf(j);
+      Type lambda = area(j)*exp(mu); // intensity 
+      nll -= dpois_stable(respi(j),lambda,true);
+      // std::cout << nll << "\n";
     }
   }
   ADREPORT(kappa);
