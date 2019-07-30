@@ -1,5 +1,4 @@
-#include <TMB.hpp>
-// counts list (length one if model only spatial)
+#include <TMB.hpp> // counts list (length one if model only spatial)
 template<class Type>
 struct counts_list : vector<vector <Type> >  {
   counts_list(SEXP x){  /* x = List passed from R for counts at each time step */
@@ -10,7 +9,7 @@ struct counts_list : vector<vector <Type> >  {
     }
   }
 };
-template<class Type>
+template<class Type> // covariate list of matrices for each time step
 struct covariate_list : vector<matrix <Type> > {
   covariate_list(SEXP x){  /* x = List passed from R */
     (*this).resize(LENGTH(x));
@@ -21,7 +20,7 @@ struct covariate_list : vector<matrix <Type> > {
   }
 };
 
-template<class Type>
+template<class Type> // dpois to deal with low expectations
 Type dpois_stable (const Type &x, const Type &lambda, const int &give_log){
   Type out;
   out = pow(lambda, x)*exp(-lambda)/exp(lgamma(x + 1));
